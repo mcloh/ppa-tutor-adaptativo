@@ -98,8 +98,8 @@ Uso de LLM é instrumentado com tokens de entrada/saída, latência e custo esti
 ### RNF-26 — Métricas administrativas sem estimativa enganosa
 Percentuais sem denominador, custo sem regra de preço e disponibilidade sem sonda retornam explicitamente `null`/indisponível — nunca são exibidos como zero ou aproximados (ver RF-38).
 
-### RNF-27 — Observabilidade real vs. infraestrutura não conectada
-Existe SDK completo de heartbeat/cron, notificação ao proprietário e roteador de sistema herdados do template "Manus", mas **não estão conectados** à aplicação em produção (nenhum job agendado, nenhuma rota `/api/scheduled/*` registrada). A observabilidade de fato em uso é a telemetria própria descrita em RF-37–RF-40.
+### RNF-27 — Observabilidade própria, sem infraestrutura de terceiros
+Não há heartbeat/cron, notificação externa ou roteador de sistema de terceiros — o SDK herdado do template inicial que oferecia isso nunca esteve conectado à aplicação e foi removido. A observabilidade real é inteiramente própria: a telemetria descrita em RF-37–RF-40.
 
 ---
 

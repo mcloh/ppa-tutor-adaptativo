@@ -146,7 +146,7 @@ describe("contratos da interface responsiva", () => {
     expect(plans).toContain("Seus créditos entram automaticamente após a confirmação do pagamento.");
     expect(plans).not.toContain("Checkout de produção: cartão, Pix ou boleto");
     expect(plans).not.toContain("A compra de créditos estará disponível em breve.");
-    expect(plans).toContain('src="/manus-storage/pagbank-secure-partner-badge_edb836ea.png"');
+    expect(plans).toContain('src="/storage/pagbank-secure-partner-badge_edb836ea.png"');
     expect(plans).toContain('alt="Compra segura com PagBank, parceiro de pagamentos"');
     expect(plans).toContain("disabled={(!available && !requiresAuthentication) || isSubmitting}");
     expect(plans).toContain("Situação de créditos");

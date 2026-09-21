@@ -25,11 +25,11 @@ flowchart LR
     end
 
     MySQL[(MySQL via Drizzle)]
-    LLM[LLM — proxy compatível OpenAI\nmodelo gpt-5-mini]
+    LLM[LLM — API OpenAI\nmodelo configurável]
+    S3[(AWS S3\narmazenamento de objetos)]
     SMTP[SMTP — Nodemailer]
     Google[Google OAuth 2.0]
     PagBank[PagBank — Checkout + Webhook]
-    Forge[Plataforma Manus / Forge\nstorage, LLM proxy — parcialmente residual]
 
     TRPCClient -->|HTTP batch, cookies| TRPCRouter
     UI -->|redirect direto| REST
@@ -39,10 +39,10 @@ flowchart LR
     DB --> MySQL
     Domain --> LLM
     DB --> SMTP
+    DB --> S3
     REST --> Google
     REST --> PagBank
     DB --> PagBank
-    LLM --> Forge
 ```
 
 ## 2. Stack tecnológico
@@ -51,7 +51,7 @@ flowchart LR
 |---|---|
 | Linguagem | TypeScript 5.9 estrito, ESM |
 | Frontend | React 19.2, Vite 7.1, wouter 3.3, TanStack Query 5, `@trpc/react-query`, Tailwind CSS 4, Radix UI, shadcn/ui ("new-york"), react-hook-form + Zod 4, framer-motion, recharts, streamdown |
-| Backend | Express 4.21, tRPC Server 11, Drizzle ORM 0.44 (MySQL/mysql2), google-auth-library, jose (uso legado), nodemailer |
+| Backend | Express 4.21, tRPC Server 11, Drizzle ORM 0.44 (MySQL/mysql2), google-auth-library, nodemailer, @aws-sdk/client-s3 + @aws-sdk/s3-request-presigner |
 | Banco | MySQL (confirmado por `drizzle.config.ts` → `dialect: "mysql"`) |
 | Build | esbuild (server), Vite (client) |
 | Testes | Vitest 2 |
@@ -61,12 +61,11 @@ flowchart LR
 
 | Integração | Uso real | Observações |
 |---|---|---|
-| **LLM** (`server/_core/llm.ts`) | Geração de questões, feedback e avaliações (`server/domain/tutorLlm.ts`), modelo `gpt-5-mini`, API compatível com OpenAI Chat Completions, via proxy Forge (`BUILT_IN_FORGE_API_URL`/`_API_KEY`), retry com backoff exponencial. | Todas as saídas passam pela barreira `assertNoRagLeakage`. |
+| **LLM** (`server/_core/llm.ts`) | Geração de questões, feedback e avaliações (`server/domain/tutorLlm.ts`), API compatível com OpenAI Chat Completions, aponta por padrão para `https://api.openai.com/v1` (`OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`), retry com backoff exponencial. | Todas as saídas passam pela barreira `assertNoRagLeakage`. |
 | **PagBank** (pagamentos) | Checkout hospedado, webhook com verificação HMAC + reconciliação server-to-server, Connect Token Challenge (par RSA 2048). Ambientes Sandbox/Produção totalmente segregados por variável de ambiente e coluna `environment`. | Integração mais coberta por testes do projeto; ver `docs/backlog.md` para pendências de homologação. |
-| **Google OAuth 2.0** | Login/vinculação de conta via `google-auth-library`, redirect URI fixo em produção. | Não usa o SDK de OAuth "Manus" — implementação própria. |
+| **Google OAuth 2.0** | Login/vinculação de conta via `google-auth-library`, redirect URI fixo em produção. | Implementação própria, sem dependência de plataforma terceira. |
 | **SMTP** (Nodemailer) | Ativação de conta e recuperação de senha, porta 465/TLS implícito obrigatório. | Deliverability para Gmail é uma pendência ativa (ver backlog). |
-| **Armazenamento de objetos** | Proxy simples via Forge/Manus (`GET/PUT` com URL pré-assinada), não via AWS SDK direto. | `@aws-sdk/client-s3` e `@aws-sdk/s3-request-presigner` estão instalados mas **não são usados** em nenhum arquivo — dependência morta. |
-| **Plataforma "Manus"** | Origem do template do projeto (`template.json`, id `web-db-user`). SDK server-side (`server/_core/sdk.ts`, `oauth.ts`, `dataApi.ts`, `heartbeat.ts`, `notification.ts`, `imageGeneration.ts`, `voiceTranscription.ts`, `map.ts`, `systemRouter.ts`) majoritariamente **não conectado** à aplicação real — ver seção 5. |
+| **Armazenamento de objetos** (`server/storage.ts`) | AWS S3 direto via `@aws-sdk/client-s3`/`@aws-sdk/s3-request-presigner` (`AWS_REGION`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_BASE_URL` opcional). Upload por `PutObjectCommand`; download via rota `/storage/*` (URL pública de CDN ou presign de 5 min). | Substituiu o proxy Forge/Manus — ver `docs/backlog.md` para a migração pendente dos ativos binários já publicados. |
 | Analytics de terceiro (Umami) | Script injetado em `client/index.html` via placeholders `%VITE_ANALYTICS_ENDPOINT%`/`%VITE_ANALYTICS_WEBSITE_ID%`. | Mecanismo de substituição desses placeholders não está nas configs deste repositório — provavelmente feito pela camada de hospedagem. |
 
 ## 4. Estrutura de pastas
@@ -77,7 +76,6 @@ client/src/
                   # PlansPage, StudentProfilePage, AdminAnalyticsDashboard,
                   # CanonicalConceptMapPage, PoliciesPage, NotFound
   components/     # PasswordChangePanel, PoliciesCornerLink, OfficialBrandLogo, ErrorBoundary
-                  # (+ resíduos de template: AIChatBox, DashboardLayout*, ManusDialog, Map — ver backlog)
   components/ui/  # Biblioteca shadcn/ui
   _core/hooks/    # useAuth
   hooks/          # usePlatformActivity, useMobile, usePersistFn, useComposition
@@ -86,15 +84,14 @@ client/src/
 
 server/
   _core/          # Infraestrutura genérica: trpc.ts, context.ts, cookies.ts, env.ts, index.ts (bootstrap Express),
-                  # vite.ts (dev/prod serving), llm.ts (único módulo "Manus" ativamente usado),
-                  # storageProxy.ts (rota /manus-storage/*)
-                  # + residuais não conectados: sdk.ts, oauth.ts, dataApi.ts, heartbeat.ts,
-                  #   notification.ts, imageGeneration.ts, voiceTranscription.ts, map.ts, systemRouter.ts
+                  # vite.ts (dev/prod serving), llm.ts (cliente OpenAI), storageProxy.ts (rota /storage/*)
+  routers/        # adminAnalytics.ts (activityRouter + adminAnalyticsRouter)
   domain/         # Regras de negócio puras e testáveis: learning, assessmentMatrix, studyProgram,
                   # billing, cache, cacheWarmup, email, homologationAudit, pagbankSandbox,
                   # password, publicCanonicalCatalog, rag, tutorLlm, tutorLlmSafety, adminAnalytics
   routers.ts      # Roteador tRPC principal (appRouter)
   db.ts           # Camada de dados + orquestração transacional (1727 linhas)
+  storage.ts      # Armazenamento de objetos (AWS S3 direto)
   auth.ts / googleAuth.ts / pagbankWebhook.ts / pagbankConnectChallenge.ts / adminAnalyticsDb.ts
 
 drizzle/
@@ -103,21 +100,14 @@ drizzle/
 shared/
   types.ts, const.ts, _core/errors.ts   # Tipos e constantes compartilhados client/server
 
-scripts/          # Automação operacional (seed, warm-cache, smoke tests, captura de UI) — ver how-to.md
+scripts/          # Automação operacional (seed, warm-cache, smoke tests, captura de UI,
+                  # migrate-brand-assets-to-s3) — ver how-to.md
 docs/exec-plan/   # Histórico de planejamento/execução de features passadas (não normativo)
 ```
 
-## 5. A plataforma "Manus" e código residual
+## 5. Nota histórica — plataforma "Manus"
 
-O projeto foi gerado a partir de um template da plataforma Manus (`template.json`, id `web-db-user`). Vestígios visíveis: `vite-plugin-manus-runtime`, `client/public/__manus__/`, `server/_core/types/manusTypes.ts`, um "Manus Debug Collector" ativo só em dev (`vite.config.ts`) que grava logs de console/rede/replay em `.manus-logs/*.log`.
-
-**Importante para manutenção futura**: a maior parte desse SDK server-side está **desconectada** da aplicação real:
-- `registerOAuthRoutes` (login "Manus") nunca é chamado em `server/_core/index.ts`.
-- `ManusDialog.tsx` não é importado por nenhuma página.
-- `systemRouter` (heartbeat/notifyOwner via tRPC) não está montado em `appRouter`.
-- `heartbeat.ts`, `notification.ts`, `dataApi.ts`, `map.ts`, `voiceTranscription.ts`, `imageGeneration.ts` não são importados por nenhum outro arquivo do produto.
-
-A autenticação real é 100% própria (e-mail/senha + Google OAuth, sessão por cookie opaco). O único módulo `_core` de fato usado pelo produto é `llm.ts` (proxy de LLM), além da infraestrutura genérica de tRPC/Express e do proxy de storage. Recomenda-se decidir explicitamente (remover vs. documentar como reservado) o destino desse código morto — ver `docs/backlog.md`.
+O projeto foi originalmente gerado a partir de um template da plataforma Manus (`web-db-user`), que incluía um SDK server-side para login OAuth próprio, heartbeat/cron, notificações, geração de imagem, transcrição de voz e proxy de mapas, além de um proxy de LLM e de armazenamento de objetos apontando para o backend proprietário da Manus ("Forge"). Todo esse código foi removido: o SDK auxiliar (login OAuth, heartbeat, notificações, imagem, voz, mapas) nunca esteve conectado à aplicação e foi excluído sem substituição; o LLM e o armazenamento de objetos, que **estavam** ativos, foram migrados para provedores diretos (API oficial da OpenAI e AWS S3 — ver seção 3). A autenticação do produto sempre foi própria (e-mail/senha + Google OAuth), independente desse SDK.
 
 ## 6. Fluxos ponta a ponta (sequência)
 
@@ -130,7 +120,7 @@ sequenceDiagram
     participant D as db.ts / domain
     participant Cache as shared_question_cache
     participant RAG as knowledge_chunks (léxico)
-    participant LLM as LLM (gpt-5-mini)
+    participant LLM as LLM (OpenAI, modelo configurável)
 
     C->>R: study.current
     R->>D: deliverQuestion(userId)
@@ -222,23 +212,24 @@ sequenceDiagram
 
 ## 7. Variáveis de ambiente
 
-Carregadas via `dotenv` a partir da raiz do projeto. Não há `.env.example` versionado (recomendação de backlog).
+Carregadas via `dotenv` a partir da raiz do projeto. Ver `.env.example` para o arquivo de referência completo.
 
 | Variável | Domínio | Obrigatória para |
 |---|---|---|
 | `DATABASE_URL` | Core | Conexão MySQL (Drizzle, drizzle-kit, todos os scripts) |
 | `PORT` | Core | Porta do Express (default 3000, com fallback automático) |
 | `NODE_ENV` | Core | `development`/`production` — decide middleware Vite vs. estático |
-| `BUILT_IN_FORGE_API_URL`, `BUILT_IN_FORGE_API_KEY` | LLM/Storage | Proxy de LLM (`llm.ts`) e storage (`storage.ts`/`storageProxy.ts`) |
+| `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` | LLM | Geração de questões, feedback e avaliações (`llm.ts`, `tutorLlm.ts`) |
+| `AWS_REGION`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_BASE_URL` | Storage | Upload/leitura de objetos (`storage.ts`, `storageProxy.ts`); credenciais AWS pela cadeia padrão do SDK |
 | `SMTP_HOST`, `SMTP_PORT`(=465), `SMTP_SECURE`(=true), `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_CLIENT_NAME`, `EMAIL_FROM` | E-mail | Ativação/recuperação de senha |
 | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | Auth | Login Google |
-| `PAGBANK_SANDBOX_TOKEN`, `PAGBANK_PRODUCTION_TOKEN` | Pagamentos | Checkout/webhook por ambiente |
+| `PAGBANK_SANDBOX_TOKEN`, `PAGBANK_PRODUCTION_TOKEN`, `PAGBANK_PRODUCTION_PIX_KEY` | Pagamentos | Checkout/webhook por ambiente |
 | `PAGBANK_HOMOLOGATION_MODE`, `PAGBANK_PRODUCTION_HOMOLOGATION_MODE`, `PAGBANK_PRODUCTION_COMMERCIAL_MODE` | Pagamentos | Flags de habilitação por fase comercial |
 | `PAGBANK_CONNECT_PUBLIC_KEY[_BASE64]`, `PAGBANK_CONNECT_PRIVATE_KEY[_BASE64]`, `PAGBANK_CONNECT_KEY_CREATED_AT` | Pagamentos | Connect Token Challenge (par RSA) |
-| `JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, `OWNER_OPEN_ID` | Legado "Manus" | Usados apenas pelo SDK OAuth/heartbeat não conectado — candidatos a remoção |
 | `VITE_ANALYTICS_ENDPOINT`, `VITE_ANALYTICS_WEBSITE_ID` | Analytics | Script Umami injetado no HTML |
+| `VITE_DEV_ALLOWED_HOSTS` | Dev | Hosts extras liberados no dev server do Vite (padrão: `localhost,127.0.0.1`) |
 | `PPA_BASE_URL`, `OCR_CONCURRENCY`, `RUN_SMTP_LIVE`, `RUN_SMTP_LIVE_DELIVERY_TEST`, `RUN_PAGBANK_PIX_KEY_VALIDATION`, `PAGBANK_ENABLE_PRODUCTION_AUTH_PROBE` | Scripts/Testes | Automação e testes que tocam serviços reais |
 
 ## 8. Deploy e CI/CD
 
-Não há `Dockerfile`, workflows de CI (`.github/workflows` ou equivalente), nem arquivos de infraestrutura como código (`render.yaml`, `fly.toml`, `vercel.json` etc.) neste repositório. Domínios permitidos em `vite.config.ts` (`*.manus*.computer`) e o redirect URI fixo do Google OAuth (`ppa.simulados.apia.app.br`) indicam fortemente que o build/deploy é orquestrado pela infraestrutura própria da plataforma Manus, fora do controle de versão deste repositório. Isso deve ser confirmado operacionalmente e documentado à parte (ver backlog).
+O repositório inclui `Dockerfile` (build multi-stage: instala dependências, builda client+server, imagem final só com dependências de produção) e `.github/workflows/ci.yml` (type-check, migração contra um MySQL de serviço, testes, build) para GitHub Actions. Isso cobre integração contínua e um caminho de containerização; a orquestração de deploy real (onde a imagem roda, como segredos são providos em produção) continua sendo uma decisão operacional do time, não fixada neste repositório.

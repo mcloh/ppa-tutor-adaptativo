@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { recordLlmUsage } from "../adminAnalyticsDb";
 import { invokeLLM } from "../_core/llm";
+import { ENV } from "../_core/env";
 import { sanitizeOperationErrorCode } from "./adminAnalytics";
 import type { PedagogicalAction, ResponseClassification } from "./learning";
 
-const model = "gpt-5-mini";
+const model = ENV.llmModel;
 
 const generatedQuestionSchema = z.object({
   prompt: z.string().min(24).max(1200),

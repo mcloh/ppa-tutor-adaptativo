@@ -2,6 +2,9 @@ import { OfficialBrandLogo } from "@/components/OfficialBrandLogo";
 import { ArrowLeft, BadgeCheck, BookOpenCheck, CreditCard, FileCheck2, GraduationCap, Handshake, Landmark, LockKeyhole, Mail, Scale, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 
+// Atualize esta data manualmente sempre que o conteúdo das seções abaixo mudar.
+const POLICIES_LAST_UPDATED = "16 de setembro de 2026";
+
 const sections = [
   { icon: BookOpenCheck, number: "01", title: "Finalidade da plataforma", body: "O PPA Teórico — Tutor Adaptativo possui finalidade exclusivamente educacional e de apoio aos estudos para a teoria de Piloto Privado de Avião. Questões simuladas, resultados, estatísticas e recursos de estudo auxiliam a revisão, o fortalecimento de conceitos e a identificação de temas que merecem maior atenção." },
   { icon: Landmark, number: "02", title: "Independência em relação às instituições", body: "Salvo informação expressa em contrário, a plataforma é independente e não possui vínculo, associação, afiliação, patrocínio, homologação, autorização ou endosso da ANAC ou de instituições responsáveis por exames. Nomes, certificações, programas e marcas eventualmente citados possuem finalidade descritiva e pertencem aos seus respectivos titulares." },
@@ -61,7 +64,7 @@ export default function PoliciesPage() {
         </section>
 
         <footer className="mt-8 flex flex-col gap-4 border-t border-white/15 pt-6 text-sm text-blue-100/65 sm:flex-row sm:items-center sm:justify-between">
-          <p>Última atualização: 16 de setembro de 2026.</p>
+          <p>Última atualização: {POLICIES_LAST_UPDATED}.</p>
           <Link href="/" className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-sky-200 hover:text-white"><ArrowLeft className="h-4 w-4" />Voltar ao PPA Teórico</Link>
         </footer>
       </div>

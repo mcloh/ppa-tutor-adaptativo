@@ -1,77 +1,73 @@
 # Backlog — Faltas, Problemas e Melhorias
 
-> Consolidado a partir da engenharia reversa do código-fonte e do histórico de execução em `docs/exec-plan/` e `todo.md`. Organizado por prioridade e categoria. Itens marcados **[verificado nesta auditoria]** foram confirmados diretamente no repositório; os demais vêm do histórico de planejamento do projeto e devem ser reconfirmados operacionalmente antes de ação.
+> Consolidado a partir da engenharia reversa do código-fonte e do histórico de execução em `docs/exec-plan/` e `todo.md`. Itens marcados **[verificado nesta auditoria]** foram confirmados diretamente no repositório. A seção 1 registra o que já foi corrigido em uma rodada de limpeza e implementação subsequente; a seção 2 lista o que permanece em aberto.
 
-## P0 — Bloqueadores críticos
+## 0. Ação obrigatória antes do próximo deploy
 
-### B-01 — Roteador de analytics ausente do repositório **[verificado nesta auditoria]**
-`server/routers.ts:68` importa `{ activityRouter, adminAnalyticsRouter }` de `./routers/adminAnalytics`, mas esse arquivo não existe no working tree nem em nenhum commit git. Isso provavelmente quebra `pnpm run build`, `pnpm run dev` e `pnpm run check`, e deixa inoperantes o Console Gerencial (`AdminAnalyticsDashboard.tsx`) e a telemetria de atividade.
-**Ação recomendada**: reconstruir o arquivo a partir de `server/adminAnalyticsDb.ts`, `server/domain/adminAnalytics.ts` e dos testes de contrato existentes (`server/admin-analytics-contract.test.ts`, `server/admin-analytics-read.integration.test.ts`), que documentam com precisão o comportamento esperado (`adminAnalytics.overview/operations/costs`, `activity.touch`, ambos restritos por papel). Verificar também se há um backup/checkpoint anterior de onde recuperar o conteúdo original.
+A dependência da plataforma Manus para LLM e armazenamento de objetos foi **substituída por provedores diretos** (OpenAI oficial e AWS S3 — ver seção 1, B-06/B-07). Isso significa que, a partir desta mudança, o ambiente de execução **exige credenciais próprias** que antes não eram necessárias:
 
-### B-02 — Divergência entre git e disco em `docs/` **[verificado nesta auditoria]**
-`git status` mostra 18 arquivos `docs/*.md`/`.json` como deletados (ainda rastreados), enquanto os mesmos arquivos existem, não rastreados, em `docs/exec-plan/`. A reorganização de pastas nunca foi commitada.
-**Ação recomendada**: `git add`/`git rm` para refletir a reorganização real (ou desfazer, se não intencional) antes de qualquer novo commit — hoje um `git commit` acidental poderia apagar permanentemente o histórico de planejamento do ponto de vista do git.
+- `OPENAI_API_KEY` (geração de questões, feedback e avaliações deixa de funcionar sem ela).
+- `AWS_REGION` e `AWS_S3_BUCKET` (upload de novos arquivos; leitura de arquivos existentes via `/storage/*`).
+- Os ativos de marca já publicados (logotipos, favicons, selo PagBank) hoje só existem no bucket antigo da Manus/Forge. Rode **uma única vez**, com as credenciais antigas (`FORGE_API_URL`/`FORGE_API_KEY`) e as novas (`AWS_REGION`/`AWS_S3_BUCKET`), o script `scripts/migrate-brand-assets-to-s3.mjs` para copiá-los ao novo bucket antes de publicar — sem isso, logotipo, favicon e selo PagBank ficarão quebrados em produção.
 
-## P1 — Pendências ativas de negócio (confirmar estado atual antes de agir)
+Ver `.env.example` para a lista completa de variáveis.
 
-### B-03 — Entregabilidade de e-mail transacional (SMTP → Gmail)
-Segundo o histórico do projeto, mesmo após corrigir SPF, alinhamento de envelope e HELO/EHLO (para evitar o roteador anti-spam `fightspamHG` do provedor de hospedagem), **não há confirmação definitiva de entrega ao Gmail** via SMTP remoto autenticado da aplicação. Este é, segundo o próprio histórico, "o bloqueador tecnicamente mais crítico e genuinamente ainda em aberto do projeto".
-Passos já mapeados e não concluídos:
-- Obter no cPanel **Track Delivery** a trilha do último envio (recurso não habilitado na conta — requer solicitação ao provedor).
-- Comparar a submissão SMTP remota do PPA com a entrega bem-sucedida via injeção local (Roundcube/Cube) para isolar a divergência de rota/cabeçalho.
-- Abrir chamado especializado ao provedor de hospedagem (HostGator) pedindo rastreio Exim de uma tentativa específica.
-- Só então autorizar um novo envio técnico controlado a um destinatário já aprovado.
-Também vale confirmar com o responsável se `EMAIL_AUTOMATIONS_ENABLED = false` (`server/domain/email.ts:10`) é intencional **[verificado nesta auditoria: a constante existe e está `false`]**.
+## 1. Resolvido nesta rodada
 
-### B-04 — Confirmar estado real da homologação/produção PagBank
-O histórico indica que a homologação de produção foi concluída e `PAGBANK_PRODUCTION_COMMERCIAL_MODE=enabled` foi habilitada, abrindo compra ao público (cartão, PIX, boleto). Isso **não pôde ser reverificado nesta auditoria** (sem acesso ao ambiente publicado/variáveis reais). Vários itens `[ ]` (não concluídos) do `todo.md` relativos a "antes de ativar cobrança comercial" parecem tecnicamente superados por entradas `[x]` posteriores — recomenda-se auditoria operacional rápida (consultar a flag em produção, rotas ativas, logs de homologação) para confirmar e então oficialmente encerrar esses itens de checklist. Especificamente, confirmar:
-- Segregação real de endpoint/webhook/assinatura/reconciliação entre Sandbox e Produção.
-- Se a validação de produção foi feita sem criar cobrança real antes da autorização explícita.
-- Estado do cadastro da aplicação PagBank de produção (nome, identificador, descrição, URL) e da URL de notificação com autenticação técnica dedicada (item ainda listado como pendente no histórico).
+### B-01 — Roteador de analytics ausente do repositório — **RESOLVIDO**
+Recriado em `server/routers/adminAnalytics.ts` (`activityRouter` + `adminAnalyticsRouter`), reconstruído a partir de `adminAnalyticsDb.ts`, `domain/adminAnalytics.ts` e dos testes de contrato. Validado com `tsc --noEmit`, build de produção completo e a suíte Vitest inteira rodando contra um MySQL real (120 testes, apenas falhas esperadas por ausência de credenciais externas reais — ver seção 2).
 
-### B-05 — Doutrina de dupla verificação em produção
-Confirmar que a política de dupla verificação (assinatura de webhook + reconciliação TLS autenticada) está de fato implementada e testada especificamente nas credenciais/endpoint de **produção** (não apenas Sandbox), incluindo o cabeçalho `x-authenticity-token` — o histórico registra isso como item pendente em algum ponto, possivelmente já endereçado pela introdução da coluna `environment` na migração 0019.
+### B-02 — Divergência entre git e disco em `docs/` — **RESOLVIDO**
+Um checkpoint automático do ambiente (`commit 63b3614`) já havia sincronizado a reorganização de `docs/exec-plan/` com o índice do git antes desta rodada. Confirmado: `git status` não mostra mais divergência.
 
-## P2 — Débito técnico e limpeza (não bloqueante, mas reduz risco de manutenção)
+### B-06 — Código residual do template "Manus" — **RESOLVIDO**
+Removidos por completo: `server/_core/sdk.ts`, `oauth.ts`, `dataApi.ts`, `heartbeat.ts`, `notification.ts`, `imageGeneration.ts`, `voiceTranscription.ts`, `map.ts`, `systemRouter.ts`, `types/manusTypes.ts`; `client/src/components/ManusDialog.tsx`, `DashboardLayout.tsx`, `DashboardLayoutSkeleton.tsx`, `AIChatBox.tsx`, `Map.tsx`; `client/src/pages/ComponentShowcase.tsx`; `client/src/const.ts` (helpers do OAuth "Manus" mortos); `client/public/__manus__/`; `template.json`; o plugin `vite-plugin-manus-runtime` e o "Manus Debug Collector" em `vite.config.ts`. `shared/const.ts` perdeu os exports órfãos (`COOKIE_NAME`, `ONE_YEAR_MS`, `OAUTH_STATE_COOKIE`, `encodeOAuthState`, `decodeOAuthState`, `OAuthState`).
 
-### B-06 — Código residual do template "Manus" desconectado **[verificado nesta auditoria]**
-Grande parte do SDK em `server/_core/` não está conectada à aplicação: `sdk.ts` (OAuth "Manus", nunca registrado), `heartbeat.ts` (cron, nenhum job criado), `notification.ts`, `dataApi.ts`, `map.ts`, `voiceTranscription.ts`, `imageGeneration.ts`, `systemRouter.ts` (não montado em `appRouter`). No cliente: `ComponentShowcase.tsx` (não roteado), `AIChatBox.tsx`, `DashboardLayout.tsx`/`DashboardLayoutSkeleton.tsx`, `ManusDialog.tsx`, `Map.tsx` — nenhum referenciado por página real.
-**Ação recomendada**: decidir explicitamente entre remover (reduz superfície de manutenção e confusão para novos mantenedores) ou documentar como "reservado para uso futuro" — hoje geram ambiguidade sobre o que é produto vs. scaffold.
+### B-07 — Dependências AWS instaladas e nunca usadas — **RESOLVIDO (de outra forma)**
+`@aws-sdk/client-s3` e `@aws-sdk/s3-request-presigner` agora são efetivamente usados: `server/storage.ts` foi reescrito para falar diretamente com AWS S3 (upload via `PutObjectCommand`, download via URL presignada ou base pública de CDN), substituindo o proxy Forge/Manus. A rota de download mudou de `/manus-storage/*` para `/storage/*` (`server/_core/storageProxy.ts`), com todas as referências no cliente, `index.html`, `manifest.json` e testes atualizadas. **Atenção**: ver seção 0 — os arquivos binários precisam ser migrados manualmente para o novo bucket.
 
-### B-07 — Dependências instaladas e nunca usadas
-`@aws-sdk/client-s3` e `@aws-sdk/s3-request-presigner` estão em `package.json` mas não são importados em nenhum arquivo (o armazenamento de objetos real usa um proxy HTTP simples via Forge/Manus). Remover ou justificar a permanência.
+O LLM (`server/_core/llm.ts`, `server/domain/tutorLlm.ts`) também deixou de apontar para `forge.manus.im`: agora usa `OPENAI_API_KEY`/`OPENAI_BASE_URL`/`OPENAI_MODEL`, com padrão para a API oficial da OpenAI (`https://api.openai.com/v1`). `axios` e `jose` (usados só pelo SDK morto) e `@types/google.maps` (usado só pelo `Map.tsx` morto) foram removidos de `package.json`.
 
-### B-08 — Página 404 fora do design system **[verificado nesta auditoria]**
-`client/src/pages/NotFound.tsx` mantém estilo/gradiente genérico do template e texto em inglês, quebrando a consistência visual "blueprint aeronáutico" e o idioma pt-BR do restante do produto.
+### B-08 — Página 404 fora do design system — **RESOLVIDO**
+`client/src/pages/NotFound.tsx` reescrita no padrão visual "blueprint aeronáutico" (`blueprint-grid`, `cad-frame`, `eyebrow`) e traduzida para pt-BR.
 
-### B-09 — `ReadinessDashboard` sem tratamento de erro dedicado **[verificado nesta auditoria]**
-Diferente de `AdminAnalyticsDashboard`, `StudentProfilePage` e `PlansPage`, o dashboard de prontidão não trata o estado `error` de `dashboard.overview` — se a query falhar, a tela fica presa indefinidamente no skeleton de carregamento, sem opção de retry visível ao usuário.
+### B-09 — `ReadinessDashboard` sem tratamento de erro — **RESOLVIDO**
+Adicionado bloco de erro dedicado (mesmo padrão do `AdminAnalyticsDashboard`) com botão "Tentar novamente" quando `dashboard.overview` falha.
 
-### B-10 — Data hardcoded na página de políticas **[verificado nesta auditoria]**
-`client/src/pages/PoliciesPage.tsx:64` tem a data de "última atualização" escrita diretamente no componente — precisa ser lembrada e editada manualmente a cada revisão de conteúdo; não há versionamento dinâmico.
+### B-10 — Data hardcoded na página de políticas — **RESOLVIDO (parcialmente)**
+Extraída para a constante nomeada `POLICIES_LAST_UPDATED` no topo de `PoliciesPage.tsx`, com comentário explícito de que deve ser atualizada manualmente a cada revisão de conteúdo. Continua sendo edição manual — não há CMS ou versionamento dinâmico de conteúdo legal, o que seria escopo maior que uma correção pontual.
 
-### B-11 — Ausência de infraestrutura como código / CI **[verificado nesta auditoria]**
-Não há `Dockerfile`, workflows de CI (GitHub Actions ou equivalente), nem `.env.example`. O processo de build/deploy parece depender inteiramente da plataforma Manus, sem paridade declarativa neste repositório. Recomenda-se ao menos versionar um `.env.example` documentando as variáveis necessárias (ver `docs/arquitetura.md` seção 7) e considerar formalizar o pipeline de deploy, mesmo que a execução continue delegada à plataforma.
+### B-11 — Ausência de infraestrutura como código / CI — **RESOLVIDO**
+Adicionados `.env.example` (todas as variáveis documentadas), `Dockerfile` multi-stage + `.dockerignore`, e `.github/workflows/ci.yml` (type-check, migração em MySQL de serviço, testes, build) para GitHub Actions.
+
+### B-15 — Variáveis de ambiente legadas — **RESOLVIDO**
+`JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, `OWNER_OPEN_ID` removidas de `server/_core/env.ts` junto com a remoção do SDK Manus que as consumia (B-06).
+
+## 2. Ainda em aberto
+
+### B-03 — Entregabilidade de e-mail transacional (SMTP → Gmail) — **pendência operacional, fora do alcance de uma mudança de código**
+Segundo o histórico do projeto, mesmo após corrigir SPF, alinhamento de envelope e HELO/EHLO, não há confirmação definitiva de entrega ao Gmail via SMTP remoto autenticado. Requer rastreio Exim do provedor de hospedagem (cPanel Track Delivery) — não é algo que uma alteração no código deste repositório resolva sozinha. Confirmar também se `EMAIL_AUTOMATIONS_ENABLED = false` (`server/domain/email.ts`) é intencional.
+
+### B-04 — Confirmar estado real da homologação/produção PagBank — **requer acesso ao ambiente publicado**
+Não foi possível reverificar nesta auditoria (sem acesso a variáveis/ambiente reais de produção). Vários itens `[ ]` do `todo.md` sobre "antes de ativar cobrança comercial" parecem superados por entradas `[x]` posteriores — recomenda-se auditoria operacional rápida para confirmar e oficialmente encerrar esses itens.
+
+### B-05 — Doutrina de dupla verificação em produção — **requer confirmação operacional**
+Confirmar que a política de dupla verificação (assinatura de webhook + reconciliação TLS autenticada) está testada especificamente sobre as credenciais/endpoint de produção, não só Sandbox. Não foi alterada nesta rodada (fora do escopo da limpeza Manus).
 
 ### B-12 — Ausência de `relations()` do Drizzle
-`drizzle/relations.ts` está vazio; todas as associações são FKs cruas e várias relações centrais (ex.: `study_sessions.programId`, `readiness_map_versions.eventId`) são apenas lógicas, sem constraint. Isso é funcional, mas dificulta o uso de `db.query.*` relacional do Drizzle e a validação automática de integridade em ferramentas que dependem de `relations()`.
+`drizzle/relations.ts` continua vazio; associações centrais (`study_sessions.programId`, `readiness_map_versions.eventId`) seguem sem constraint declarada. Funcional, mas dificulta uso de `db.query.*` relacional. Deferido — é uma refatoração de schema com escopo próprio, não uma correção pontual.
 
-## P3 — Melhorias sugeridas (não identificadas como pendência explícita no histórico, mas decorrentes da análise)
-
-### B-13 — Alinhar rota de exportação de auditoria a um formato de retenção
-`homologation_audit_events` não tem política de retenção/expurgo aparente no schema — como acumula evidência sanitizada indefinidamente, vale avaliar se há necessidade de arquivamento após determinado prazo, sobretudo se o volume crescer com uso comercial pleno.
+### B-13 — Retenção/expurgo de `homologation_audit_events`
+Sem política de retenção aparente no schema. Avaliar arquivamento após prazo definido se o volume crescer.
 
 ### B-14 — Cobertura de testes de UI/E2E fora do servidor
-A suíte automatizada (Vitest) cobre integralmente o backend; a validação de frontend depende de scripts manuais de captura via Chrome DevTools Protocol (não integrados a CI). Formalizar isso como suíte de regressão visual executável sob demanda reduziria dependência de revisão manual pura para mudanças de UI.
+Validação de frontend ainda depende de scripts manuais via Chrome DevTools Protocol, não integrados a CI. O workflow de CI adicionado (B-11) cobre apenas backend/build; formalizar regressão visual automatizada fica para uma iniciativa própria.
 
-### B-15 — Consolidar variáveis de ambiente legadas
-`JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, `OWNER_OPEN_ID` só são usadas pelo SDK "Manus" desconectado (ver B-06). Se a decisão for remover esse código, essas variáveis também deixam de ser necessárias — simplificando a configuração de ambiente exigida para rodar o projeto.
-
-### B-16 — Documentar explicitamente a política de retenção/exclusão de conta
-Todas as FKs de dados pessoais usam `ON DELETE CASCADE` (exclusão de usuário remove todo o histórico), sem anonimização ou período de retenção observado no schema — vale confirmar se isso está alinhado à política de privacidade divulgada publicamente (`/politicas`) e à LGPD, especialmente quanto a obrigações de retenção de registros financeiros (ledger de créditos, pedidos PagBank) mesmo após exclusão de conta.
+### B-16 — Política de retenção/exclusão de conta
+`ON DELETE CASCADE` em todas as FKs de dados pessoais remove todo o histórico ao excluir a conta, sem anonimização. Confirmar alinhamento com a política pública de privacidade e com obrigações de retenção de registros financeiros.
 
 ---
 
-## Itens do histórico já concluídos (referência, sem ação necessária)
+## Itens do histórico já concluídos antes desta rodada (referência)
 
-Não estão listados individualmente aqui por já constarem como `[x]` em `todo.md` e confirmados pelo histórico em `docs/exec-plan/`: modelagem completa da taxonomia PPA (872 conceitos), motor determinístico de aprendizagem, seleção adaptativa, cache pedagógico com barreira anti-vazamento RAG (872 conceitos × 4 rodadas auditadas), diagnóstico de 100 questões com regra transversal REG aprovada, branding oficial (logotipo, favicon, variante dark), Console Gerencial (sujeito ao gap B-01), homologação Sandbox PagBank completa, páginas públicas de planos/políticas/mapa de conceitos, fluxo de senha temporária/ativação/recuperação (implementação; entrega SMTP ainda pendente conforme B-03), login Google OAuth completo.
+Modelagem completa da taxonomia PPA (872 conceitos), motor determinístico de aprendizagem, seleção adaptativa, cache pedagógico com barreira anti-vazamento RAG, diagnóstico de 100 questões com regra transversal REG aprovada, branding oficial, homologação Sandbox PagBank completa, páginas públicas de planos/políticas/mapa de conceitos, fluxo de senha temporária/ativação/recuperação (implementação — entrega SMTP ainda pendente conforme B-03), login Google OAuth completo.

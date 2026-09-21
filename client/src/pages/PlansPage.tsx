@@ -229,7 +229,7 @@ export default function PlansPage() {
     <section className="mx-auto w-full max-w-[1440px] pb-10">
       <div className="relative overflow-hidden border-b border-white/15 pb-8 sm:pb-10">
         <aside className="absolute right-0 top-0 hidden h-32 w-32 items-center justify-center border border-sky-200/25 bg-[#061847]/35 p-2 sm:flex" aria-label="Compra segura com o parceiro PagBank">
-          <img src="/manus-storage/pagbank-secure-partner-badge_edb836ea.png" alt="Compra segura com PagBank, parceiro de pagamentos" className="h-full w-full object-contain" />
+          <img src="/storage/pagbank-secure-partner-badge_edb836ea.png" alt="Compra segura com PagBank, parceiro de pagamentos" className="h-full w-full object-contain" />
         </aside>
         <div className="relative max-w-3xl">
           <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-sky-200"><CreditCard className="h-3.5 w-3.5" />Plano de créditos</p>

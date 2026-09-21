@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Streamdown } from "streamdown";
-import { AlertTriangle, ArrowUpRight, Check, Compass, Gauge, PlaneTakeoff, Radar, Route } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Check, CircleAlert, Compass, Gauge, PlaneTakeoff, Radar, RefreshCw, Route } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
@@ -10,7 +11,22 @@ const stateLabel: Record<string, string> = { not_presented: "Sem evidência", ta
 
 export default function ReadinessDashboard() {
   const dashboard = trpc.dashboard.overview.useQuery(undefined, { refetchOnWindowFocus: false });
-  if (dashboard.isLoading || !dashboard.data) return <DashboardSkeleton />;
+  if (dashboard.isLoading) return <DashboardSkeleton />;
+  if (dashboard.error || !dashboard.data) {
+    return (
+      <section className="cad-frame max-w-2xl p-7">
+        <CircleAlert className="h-7 w-7 text-amber-200" />
+        <h1 className="mt-4 text-xl font-semibold text-white">Não foi possível carregar a prontidão</h1>
+        <p className="mt-2 text-sm leading-6 text-blue-100/65">
+          O painel de prontidão não foi carregado. Verifique sua conexão e tente novamente.
+        </p>
+        <Button onClick={() => dashboard.refetch()} className="mt-5 rounded-none bg-sky-200 text-[#04133c] hover:bg-sky-100">
+          <RefreshCw className="h-4 w-4" />
+          Tentar novamente
+        </Button>
+      </section>
+    );
+  }
   const data = dashboard.data;
   const accuracy = data.counters.independent_answers ? Math.round((data.counters.correct / data.counters.independent_answers) * 100) : 0;
   return <div className="mx-auto max-w-6xl space-y-6">

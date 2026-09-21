@@ -1,22 +1,20 @@
 # As-Built — PPA Teórico / Tutor Adaptativo
 
-> Estado real do sistema no commit `a502345` ("initial load"), branch `master`. Este documento descreve **o que existe hoje no código**, incluindo desvios entre intenção e implementação. Para o modelo de dados completo, ver `docs/modelo-er.md`; para arquitetura e integrações, `docs/arquitetura.md`; para requisitos, `docs/requisitos-funcionais.md` e `docs/requisitos-nao-funcionais.md`.
+> Estado real do sistema após a rodada de limpeza da plataforma Manus e implementação das correções de `docs/backlog.md` (branch `master`). Este documento descreve **o que existe hoje no código**. Para o modelo de dados completo, ver `docs/modelo-er.md`; para arquitetura e integrações, `docs/arquitetura.md`; para requisitos, `docs/requisitos-funcionais.md` e `docs/requisitos-nao-funcionais.md`.
 
 ## 1. Estado do repositório
 
-- Único commit no histórico git (`a502345 initial load`) — não há histórico incremental de mudanças versionado.
-- **Divergência git ↔ disco**: `git status` mostra 18 arquivos `docs/*.md`/`.json` como **deletados** (ainda rastreados pelo git) enquanto o mesmo conjunto de arquivos existe, com nomes idênticos, em `docs/exec-plan/` como **não rastreado**. Ou seja, os documentos de planejamento foram reorganizados no disco (movidos de `docs/` para `docs/exec-plan/`) sem que essa reorganização tenha sido commitada. Isso não foi causado por esta sessão de engenharia reversa — o diretório `docs/exec-plan/` já existia com esse conteúdo antes de qualquer leitura ou execução realizada aqui. Recomenda-se ao responsável do projeto revisar e commitar (ou desfazer) essa reorganização — ver `docs/backlog.md`.
-- Não há `node_modules` instalado no ambiente em que esta auditoria foi feita (não foi possível rodar `pnpm install`/`tsc`/testes como parte desta engenharia reversa).
+- Histórico git com checkpoints incrementais (commit inicial `a502345`, seguido de checkpoints automáticos do ambiente de desenvolvimento).
+- A divergência antes existente entre git e disco em `docs/` (arquivos de planejamento reorganizados sem commit) já foi sincronizada por um checkpoint automático — não há mais pendência aqui.
+- `tsc --noEmit`, a suíte Vitest completa (contra MySQL real) e `pnpm run build` (client + server) foram executados com sucesso após todas as mudanças descritas neste documento.
 
-## 2. Gap crítico confirmado: roteador de analytics ausente
+## 2. Roteador de analytics — reconstruído
 
-`server/routers.ts:68` contém:
-```ts
-import { activityRouter, adminAnalyticsRouter } from "./routers/adminAnalytics";
-```
-O arquivo **`server/routers/adminAnalytics.ts` não existe** no working tree (confirmado por `find`/`ls`) nem em nenhum commit do histórico git. Os dois routers são montados em `appRouter` (`activity`, `adminAnalytics`) e são exercitados por testes de contrato (`server/admin-analytics-contract.test.ts`, `server/admin-analytics-read.integration.test.ts`), o que confirma que o arquivo existiu em algum ponto do desenvolvimento e foi perdido (possivelmente durante a reorganização de `docs/` mencionada acima, ou por um checkpoint incompleto). O `dist/index.js` pré-compilado presente no repositório contém o código desses routers embutido, reforçando que a perda é recente.
+`server/routers/adminAnalytics.ts` estava ausente do repositório (importado em `server/routers.ts` mas inexistente) e foi **reconstruído** a partir de `server/adminAnalyticsDb.ts`, `server/domain/adminAnalytics.ts` e dos testes de contrato existentes (`server/admin-analytics-contract.test.ts`, `server/admin-analytics-read.integration.test.ts`). Exporta:
+- `activityRouter` — `touch` (mutation, protegida, best-effort) para telemetria de presença por sessão.
+- `adminAnalyticsRouter` — `overview`, `operations`, `costs.summary` (queries, exclusivas de `admin`).
 
-**Consequência**: no estado atual, `pnpm run build`, `pnpm run dev` e `pnpm run check` devem falhar por módulo ausente, e o Console Gerencial (`AdminAnalyticsDashboard.tsx`) e a telemetria de atividade (`usePlatformActivity`) ficam inoperantes até o arquivo ser restaurado ou reescrito a partir de `server/adminAnalyticsDb.ts` + `server/domain/adminAnalytics.ts` + os testes de contrato existentes (que documentam o comportamento esperado com bastante precisão). Este é o item de maior prioridade em `docs/backlog.md`.
+Validado ponta a ponta contra um MySQL real: os dois testes de contrato/integração passam, e o Console Gerencial (`AdminAnalyticsDashboard.tsx`) volta a ser funcional.
 
 ## 3. Inventário de telas (client/src/pages)
 
@@ -24,31 +22,33 @@ O arquivo **`server/routers/adminAnalytics.ts` não existe** no working tree (co
 |---|---|---|---|---|
 | `/` (não logado) | `AuthScreen` | — | — | Ativo |
 | `/` (logado, view `study`) | `StudyWorkspace` | sim | qualquer | Ativo — núcleo do produto |
-| `/` (view `dashboard`) | `ReadinessDashboard` | sim | qualquer | Ativo — **sem bloco de erro dedicado** (fica preso no skeleton se a query falhar) |
+| `/` (view `dashboard`) | `ReadinessDashboard` | sim | qualquer | Ativo — com bloco de erro dedicado e retry |
 | `/` (view `plans`) | `PlansPage` | sim | qualquer | Ativo |
 | `/` (view `profile`) | `StudentProfilePage` | sim | qualquer | Ativo |
-| `/` (view `management`) | `AdminAnalyticsDashboard` | sim | admin | **Depende do gap da seção 2** |
+| `/` (view `management`) | `AdminAnalyticsDashboard` | sim | admin | Ativo (ver seção 2) |
 | `/planos` | `PlansPage` (wrapper público) | não | — | Ativo |
 | `/mapa-de-conceitos` | `CanonicalConceptMapPage` | não | — | Ativo |
-| `/politicas` | `PoliciesPage` | não | — | Ativo — data de "última atualização" hardcoded no componente |
-| `/404` e fallback | `NotFound` | não | — | Ativo, mas em inglês/estilo genérico fora do design system |
-| — | `ComponentShowcase` | — | — | **Código morto**: não roteado, não referenciado |
+| `/politicas` | `PoliciesPage` | não | — | Ativo — data de "última atualização" isolada em `POLICIES_LAST_UPDATED`, ainda editada manualmente |
+| `/404` e fallback | `NotFound` | não | — | Ativo, no padrão visual "blueprint aeronáutico" e em pt-BR |
 
-## 4. Código residual do template (não faz parte do produto)
+`ComponentShowcase.tsx` (vitrine morta do template) foi removido — ver seção 4.
 
-Confirmado via grep de importações — nenhum destes é usado por qualquer rota/página real:
-- `client/src/pages/ComponentShowcase.tsx`
-- `client/src/components/AIChatBox.tsx`
-- `client/src/components/DashboardLayout.tsx` e `DashboardLayoutSkeleton.tsx` (menu com placeholders "Page 1"/"Page 2")
-- `client/src/components/ManusDialog.tsx` ("Please login with Manus")
-- `client/src/components/Map.tsx` (integração Google Maps, sem uso de negócio)
-- `server/_core/sdk.ts`, `oauth.ts`, `dataApi.ts`, `heartbeat.ts`, `notification.ts`, `imageGeneration.ts`, `voiceTranscription.ts`, `map.ts`, `systemRouter.ts`
-- Dependências `@aws-sdk/client-s3` e `@aws-sdk/s3-request-presigner` (instaladas, nunca importadas)
+## 4. Limpeza da plataforma Manus
+
+Toda a dependência de código morto do template inicial da plataforma Manus foi removida: `server/_core/sdk.ts`, `oauth.ts`, `dataApi.ts`, `heartbeat.ts`, `notification.ts`, `imageGeneration.ts`, `voiceTranscription.ts`, `map.ts`, `systemRouter.ts`, `types/manusTypes.ts`; `client/src/components/ManusDialog.tsx`, `DashboardLayout.tsx`, `DashboardLayoutSkeleton.tsx`, `AIChatBox.tsx`, `Map.tsx`; `client/src/pages/ComponentShowcase.tsx`; `client/src/const.ts`; `client/public/__manus__/`; `template.json`; o plugin `vite-plugin-manus-runtime` e o "Manus Debug Collector" em `vite.config.ts`.
+
+As duas integrações que **estavam ativas** (não eram código morto) foram substituídas por provedores diretos, não apenas removidas:
+- **LLM** (`server/_core/llm.ts`, `server/domain/tutorLlm.ts`): antes apontava para o proxy `forge.manus.im`; agora usa a API oficial da OpenAI por padrão (`OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`).
+- **Armazenamento de objetos** (`server/storage.ts`, `server/_core/storageProxy.ts`): antes usava presign via Forge; agora fala diretamente com AWS S3 (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `AWS_REGION`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_BASE_URL` opcional). A rota de download mudou de `/manus-storage/*` para `/storage/*`.
+
+**Ação pendente do operador**: os arquivos binários de marca (logotipos, favicons, selo PagBank) só existem hoje no bucket antigo da Manus/Forge. É necessário rodar `scripts/migrate-brand-assets-to-s3.mjs` uma única vez (com credenciais antigas e novas) antes de publicar — ver `docs/backlog.md` seção 0.
 
 ## 5. Endpoints tRPC implementados (`server/routers.ts`)
 
 | Namespace | Procedures | Papel mínimo |
 |---|---|---|
+| `activity` | `touch` | protected |
+| `adminAnalytics` | `overview`, `operations`, `costs.summary` | admin |
 | `auth` | `me`, `register`, `login`, `requestPasswordReset`, `changePassword`, `logout` | público / passwordChange |
 | `canonicalCatalog` | `publicMap` | público |
 | `studentProfile` | `get`, `update`, `attempts.list`, `attempts.create` | protected |
@@ -58,14 +58,13 @@ Confirmado via grep de importações — nenhum destes é usado por qualquer rot
 | `dashboard` | `overview` | protected |
 | `notifications` | `list`, `markRead` | protected |
 | `cacheAdmin` | `metrics`, `retire` | admin |
-| `activity`, `adminAnalytics` | (ver seção 2 — arquivo fonte ausente) | protected / admin |
 
 ## 6. Rotas REST fora do tRPC
 
 - `POST /api/webhooks/pagbank/sandbox`, `POST /api/webhooks/pagbank/production` — corpo bruto (`express.raw`, limite 256kb), verificação de assinatura HMAC + reconciliação.
 - `GET /api/auth/google/start`, `GET /api/auth/google/callback` — fluxo OAuth.
 - `GET /api/pagbank/connect/public-key` — desafio de chave pública PagBank Connect (`Cache-Control: no-store`).
-- `GET /manus-storage/*` — proxy de download de objetos (redirect 307 para URL pré-assinada).
+- `GET /storage/*` — proxy de download de objetos (redirect 307 para URL pública de CDN ou URL S3 pré-assinada).
 - `GET /api/health` — `SELECT 1` no MySQL; `200 ok` ou `503 degraded`.
 
 ## 7. Estado da integração PagBank
@@ -75,12 +74,16 @@ Confirmado via grep de importações — nenhum destes é usado por qualquer rot
 
 ## 8. Estado da entrega de e-mail transacional (SMTP)
 
-Segundo o histórico do projeto, múltiplas camadas de correção foram aplicadas (SPF, alinhamento de envelope, correção de HELO/EHLO para evitar o roteador anti-spam `fightspamHG` do provedor de hospedagem) mas **a confirmação definitiva de entrega ao Gmail via SMTP remoto autenticado da aplicação segue pendente** — falta o rastreio Exim do provedor de hospedagem para fechar o diagnóstico. No código, `EMAIL_AUTOMATIONS_ENABLED = false` em `server/domain/email.ts:10` sinaliza uma trava adicional de automação que deve ser confirmada com o time como intencional ou remanescente. Ver `docs/backlog.md`.
+Sem alteração nesta rodada — permanece uma pendência operacional externa ao código (ver `docs/backlog.md`, B-03). Múltiplas camadas de correção já foram aplicadas (SPF, alinhamento de envelope, correção de HELO/EHLO), mas a confirmação definitiva de entrega ao Gmail depende de rastreio Exim do provedor de hospedagem.
 
-## 9. Cobertura de testes observada
+## 9. Cobertura de testes
 
-Suíte Vitest extensa em `server/`, incluindo (lista não exaustiva): `access-control.test.ts`, `admin-analytics-*.test.ts`, `auth-password-flow.integration.test.ts`, `auth.logout.test.ts`, `cache-contract.test.ts`, `db.selection.test.ts`, `domain/*.test.ts` (assessmentMatrix, billing, cache, cacheWarmup, email, homologationAudit, learning, pagbankSandbox, password, publicCanonicalCatalog, rag, studyProgram, tutorLlmSafety), `google-account.integration.test.ts`, `google-oauth-config.integration.test.ts`, `googleAuth.test.ts`, `homologation-audit.integration.test.ts`, `pagbank-*.test.ts` (7 arquivos), `pagbankConnectChallenge.test.ts`, `pagbankWebhook.*.test.ts`, `question-contract.test.ts`, `smtp-config.test.ts`, `smtp-delivery.integration.test.ts`, `student-profile.integration.test.ts`, `study-program*.test.ts`, `ui-contract.test.ts`. Testes que dependem de rede real ficam atrás de flags (`RUN_SMTP_LIVE`, `RUN_PAGBANK_PIX_KEY_VALIDATION`, `PAGBANK_ENABLE_PRODUCTION_AUTH_PROBE`).
+Suíte Vitest completa em `server/` (120 testes). Executada nesta rodada contra um MySQL 8 real e com credenciais de teste para Google OAuth/PagBank: **119 de 120 passam**; a única falha restante (`google-oauth-config.integration.test.ts`) exige credenciais OAuth do Google genuinamente válidas registradas no Google Cloud Console (faz uma chamada de rede real ao endpoint de token do Google) — não é uma regressão de código. Testes que dependem de rede/credenciais reais ficam atrás de flags (`RUN_SMTP_LIVE`, `RUN_PAGBANK_PIX_KEY_VALIDATION`, `PAGBANK_ENABLE_PRODUCTION_AUTH_PROBE`).
 
 ## 10. Scripts operacionais (`scripts/*.mjs`)
 
-Nenhum está registrado em `package.json > scripts` — todos são invocados manualmente. Ver detalhamento completo em `docs/how-to.md`.
+Nenhum está registrado em `package.json > scripts` — todos são invocados manualmente. Inclui agora `migrate-brand-assets-to-s3.mjs` (migração única de ativos binários, ver seção 4). Ver detalhamento completo em `docs/how-to.md`.
+
+## 11. Infraestrutura como código (nova)
+
+Adicionados nesta rodada: `.env.example` (todas as variáveis documentadas), `Dockerfile` multi-stage + `.dockerignore`, e `.github/workflows/ci.yml` (type-check, migração contra MySQL de serviço, testes, build) para GitHub Actions.

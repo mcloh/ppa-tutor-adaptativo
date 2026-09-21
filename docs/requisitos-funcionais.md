@@ -41,7 +41,7 @@ Login "Continuar com a Conta Google" complementar ao acesso local. Fluxo Authori
 - Redirect URI fixo em produção (`https://ppa.simulados.apia.app.br/api/auth/google/callback`), não aceita redirecionamento dinâmico.
 
 ### RF-06 — Sessão
-Sessão própria por token opaco em cookie (não é JWT do fluxo legado "Manus"). Logout revoga a sessão corrente e limpa o cookie.
+Sessão própria por token opaco em cookie (não JWT). Logout revoga a sessão corrente e limpa o cookie.
 
 ### RF-07 — Papéis de usuário
 Três papéis mutuamente exclusivos, sem hierarquia: `user` (padrão, aluno), `admin` (console gerencial e curadoria de cache), `homologation` (conta técnica exclusiva para validação de pagamentos com o PagBank). Cada procedure do backend valida o papel exigido de forma independente.

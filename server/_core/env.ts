@@ -1,10 +1,17 @@
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  // LLM: cliente compatível com a API de Chat Completions da OpenAI.
+  // OPENAI_BASE_URL permite apontar para um endpoint compatível alternativo;
+  // por padrão usa a API oficial da OpenAI.
+  llmApiUrl: process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1",
+  llmApiKey: process.env.OPENAI_API_KEY ?? "",
+  llmModel: process.env.OPENAI_MODEL ?? "gpt-5-mini",
+  // Armazenamento de objetos: AWS S3 direto.
+  awsRegion: process.env.AWS_REGION ?? "",
+  s3Bucket: process.env.AWS_S3_BUCKET ?? "",
+  // Base pública opcional (ex.: domínio de CDN/CloudFront) para servir objetos
+  // sem redirect assinado. Quando ausente, o proxy de storage usa URLs
+  // pré-assinadas de curta duração via GetObjectCommand.
+  s3PublicBaseUrl: process.env.AWS_S3_PUBLIC_BASE_URL ?? "",
 };

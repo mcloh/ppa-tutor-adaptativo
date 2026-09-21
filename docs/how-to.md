@@ -1,13 +1,13 @@
 # How-To — PPA Teórico / Tutor Adaptativo
 
-> Guia operacional derivado dos scripts em `package.json` e `scripts/*.mjs`. **Antes de tudo**: resolva o gap crítico descrito em `docs/as-built.md` (seção 2) e `docs/backlog.md` — `server/routers/adminAnalytics.ts` está ausente e provavelmente impede build/dev/check.
+> Guia operacional derivado dos scripts em `package.json` e `scripts/*.mjs`.
 
 ## 1. Pré-requisitos
 
-- Node.js compatível com o projeto (ver `@types/node ^24` em devDependencies como indicativo).
+- Node.js 22+ (usado no `Dockerfile` e no workflow de CI; `@types/node ^24` como indicativo do alvo de tipos).
 - pnpm 10 (`packageManager` pinado em `package.json`).
 - Um servidor MySQL acessível.
-- Não há `.env.example` no repositório — crie um `.env` na raiz do projeto com as variáveis listadas em `docs/arquitetura.md` (seção 7). No mínimo, para subir o servidor: `DATABASE_URL`. Para funcionalidades específicas: SMTP (`SMTP_*`, `EMAIL_FROM`), Google OAuth (`GOOGLE_OAUTH_CLIENT_ID/SECRET`), PagBank (`PAGBANK_*`), LLM/Storage (`BUILT_IN_FORGE_API_URL/KEY`).
+- Copie `.env.example` para `.env` e preencha os valores reais. No mínimo, para subir o servidor: `DATABASE_URL`. Para funcionalidades específicas: SMTP (`SMTP_*`, `EMAIL_FROM`), Google OAuth (`GOOGLE_OAUTH_CLIENT_ID/SECRET`), PagBank (`PAGBANK_*`), LLM (`OPENAI_API_KEY`), armazenamento de objetos (`AWS_REGION`, `AWS_S3_BUCKET`).
 
 ## 2. Instalação e desenvolvimento local
 
@@ -59,6 +59,9 @@ Nenhum destes é chamado automaticamente por `pnpm run *` — são ferramentas m
 - **`warm-cache.mjs`** — pré-aquece o cache compartilhado de questões, gerando via LLM+RAG até 4 itens aprovados por conceito canônico, em ondas controladas, respeitando a barreira anti-vazamento.
 - **`audit-assessment-matrix.mjs`** — calcula estatísticas de cobertura da matriz de 100 questões (capítulos/conceitos por matéria) offline, sem chamar a aplicação em execução — útil para validar a viabilidade de uma nova regra de matriz antes de implementá-la.
 
+### Migração de infraestrutura (execução única)
+- **`migrate-brand-assets-to-s3.mjs`** — copia os ativos binários de marca (logotipos, favicons, selo PagBank) do bucket antigo da plataforma Manus/Forge para o novo bucket AWS S3, preservando as chaves referenciadas pelo app. Requer `FORGE_API_URL`/`FORGE_API_KEY` (credenciais antigas, só para esta migração) e `AWS_REGION`/`AWS_S3_BUCKET` (destino). Rode uma única vez antes do primeiro deploy pós-migração — ver `docs/backlog.md` seção 0.
+
 ### Smoke tests (requerem servidor rodando, via `PPA_BASE_URL`, default `http://localhost:3000`)
 - **`smoke-milestones.mjs`**, **`smoke-milestones-api-only.mjs`**, **`smoke-milestones-api-cache.mjs`** — simulam um aluno completo respondendo até os marcos de 20/100 questões, validando persistência de avaliações e plano de estudo.
 - **`smoke-auth-recovery.mjs`** — valida ponta a ponta cadastro/ativação/recuperação de senha.
@@ -83,10 +86,24 @@ Publicação automática está desativada como regra permanente:
 
 Atenção redobrada é exigida para mudanças em pagamento, autenticação, conteúdo pedagógico ou cache reutilizável.
 
-## 8. Troubleshooting conhecido
+## 8. Docker e CI
 
-### Build/dev falhando por módulo ausente
-Ver `docs/as-built.md` seção 2 — `server/routers/adminAnalytics.ts` está ausente. É necessário restaurar ou reescrever esse arquivo (a partir de `server/adminAnalyticsDb.ts`, `server/domain/adminAnalytics.ts` e dos testes de contrato `server/admin-analytics-*.test.ts`, que documentam o comportamento esperado) antes de rodar `dev`, `check` ou `build`.
+```bash
+docker build -t ppa-tutor-adaptativo .
+docker run --env-file .env -p 3000:3000 ppa-tutor-adaptativo
+```
+O `Dockerfile` é multi-stage: instala dependências, builda client+server, e a imagem final só carrega dependências de produção + `dist/`. `.github/workflows/ci.yml` roda em cada push/PR para `master`: type-check, migração contra um MySQL de serviço, testes e build.
+
+## 9. Troubleshooting conhecido
+
+### Geração de questões falhando com "OPENAI_API_KEY is not configured"
+O LLM agora aponta para a API oficial da OpenAI por padrão — configure `OPENAI_API_KEY` (e, se usar outro provedor compatível, `OPENAI_BASE_URL`/`OPENAI_MODEL`) no `.env`.
+
+### Upload/leitura de arquivos falhando com "Storage config missing"
+Configure `AWS_REGION` e `AWS_S3_BUCKET` no `.env`. As credenciais de acesso (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) são resolvidas pela cadeia padrão do SDK da AWS.
+
+### Logotipo, favicon ou selo PagBank quebrados após migrar para o novo storage
+Esses arquivos ainda só existem no bucket antigo da Manus/Forge. Rode `scripts/migrate-brand-assets-to-s3.mjs` uma única vez (ver seção 6) antes de publicar.
 
 ### E-mail transacional não chega ao Gmail
 Pendência ativa e não resolvida no histórico do projeto — não é um problema de código isolado, depende de rastreio Exim do provedor de hospedagem. Ver `docs/backlog.md` para o estado detalhado e os próximos passos já mapeados (Track Delivery no cPanel, comparação com rota de controle via Roundcube/Cube).
@@ -95,4 +112,4 @@ Pendência ativa e não resolvida no histórico do projeto — não é um proble
 O redirect URI é uma constante fixa (`https://ppa.simulados.apia.app.br/api/auth/google/callback`, `server/googleAuth.ts`) — para testar localmente é necessário um client OAuth próprio configurado com o redirect de desenvolvimento, ou ajustar temporariamente a constante (nunca commitar essa alteração).
 
 ### Variáveis de placeholder `%VITE_ANALYTICS_*%` não substituídas
-O mecanismo de substituição desses placeholders no `client/index.html` não está configurado neste repositório — depende da camada de hospedagem/deploy externa à plataforma Manus.
+O mecanismo de substituição desses placeholders no `client/index.html` não está configurado neste repositório — depende da camada de hospedagem/deploy escolhida pelo time.
