@@ -1,0 +1,14 @@
+{
+  "name": "PPA Teórico — Tutor Adaptativo",
+  "short_name": "PPA Teórico",
+  "icons": [
+    {
+      "src": "/manus-storage/ppa-teorico-icon-192_3067ed54.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#071b4d",
+  "background_color": "#071b4d",
+  "display": "standalone"
+}

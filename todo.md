@@ -1,0 +1,324 @@
+# Project TODO
+
+- [x] Implementar cadastro e autenticação por e-mail e senha, com armazenamento seguro de senha e sessão protegida.
+- [x] Garantir isolamento rígido dos dados de aprendizagem por usuário em todas as consultas, mutações e notificações.
+- [x] Modelar a taxonomia canônica PPA, mapas de prontidão versionados, eventos imutáveis, respostas e checkpoints de recuperação.
+- [x] Implementar transações auditáveis para evento, contadores, estados, agenda de revisão e versão do mapa por resposta válida.
+- [x] Criar motor determinístico em JavaScript para as classificações exatas: correto, incorreto e “Me ensine”.
+- [x] Implementar seleção adaptativa de conceitos, reforço imediato e revisão espaçada segundo o superprompt.
+- [x] Integrar geração de feedback e próxima questão exclusivamente no servidor, com resposta estruturada e validação antes da exibição.
+- [x] Impedir a exposição no cliente de gabaritos, conceitos-alvo, ações pedagógicas e instruções do tutor.
+- [x] Construir a tela de estudo responsiva com alternância entre questão de múltipla escolha e retorno/resumo.
+- [x] Construir dashboard de prontidão por matéria, capítulo, tópico e conceito, incluindo cobertura, lacunas, retomada e estados.
+- [x] Gerar e registrar avaliações de marco nas questões 20 e 100, com plano de estudo versionado e referências de auditoria.
+- [x] Implementar notificações internas para revisões vencidas e novas avaliações, preparando uma extensão futura para e-mail transacional.
+- [x] Aplicar a estética de blueprint arquitetônico profissional em azul-real, grade técnica e tipografia branca de alto contraste.
+- [x] Criar testes Vitest para regras de domínio, controle de acesso, motor de estados e dados sensíveis.
+- [x] Verificar tipos, fluxo de erro, experiência móvel, isolamento e apresentação visual antes da entrega.
+- [x] Completar o seletor adaptativo com pesos de prioridade, incidência, cobertura, confiança e evidência, com testes de ordenação.
+- [x] Exibir prontidão por tópico e indicador de retomada/estado da sessão no dashboard.
+- [x] Validar os conteúdos mínimos e a persistência auditável dos marcos 20 e 100, incluindo o plano versionado no marco diagnóstico.
+- [x] Adicionar testes de acesso não autorizado e isolamento de registros entre duas contas.
+- [x] Verificar visual e funcionalmente o fluxo autenticado completo em desktop e móvel, incluindo questão, retorno e dashboard.
+- [x] Extrair o conteúdo de aviação ppa ead.zip em uma fonte de conhecimento versionada e rastreável.
+- [x] Criar índice RAG server-side por trechos e taxonomia PPA, sem expor fonte, trechos ou metadados internos à camada visual.
+- [x] Recuperar trechos EAD relevantes antes de gerar questões, feedback e avaliações, com validação de fonte e fallback seguro.
+- [x] Cobrir o recuperador RAG e a proibição de vazamento dos trechos com testes automatizados.
+- [x] Criar cache pedagógico versionado de perguntas e explicações, vinculado à fonte RAG e à validação de qualidade.
+- [x] Reutilizar cache compartilhado entre usuários sem permitir repetição da mesma pergunta para um mesmo aluno.
+- [x] Consultar cache antes do LLM e registrar métricas de acerto, reaproveitamento e invalidação controlada.
+- [x] Testar ineditismo por aluno, reutilização entre alunos e não exposição dos metadados de cache ao cliente.
+- [x] Executar um smoke test de ponta a ponta para os marcos 20 e 100, incluindo avaliação persistida e plano versionado.
+- [x] Criar teste que proíba exposição de origem, identificadores, checksum e trechos RAG nos retornos públicos.
+- [x] Implementar invalidação controlada e métricas de desempenho/acerto por item de cache, com testes de governança.
+- [x] Refinar a tela pública de autenticação para melhorar contraste, acabamento dos controles e composição do blueprint em desktop e móvel.
+- [x] Validar marcos 20 e 100 por um smoke test que use somente as rotas da aplicação, sem inserção direta de questões.
+- [x] Comprovar por testes que itens de cache retirados não são selecionados e que contadores de classificação são incrementados após respostas reais.
+- [x] Consolidar evidência visual revisável da autenticação em desktop e móvel e do fluxo autenticado por assertions de interface.
+- [x] Adicionar assertions automatizadas de interface da autenticação para controles, abas, CTA e comportamento responsivo.
+- [x] Adicionar validação revisável do fluxo autenticado de estudo, retorno e dashboard por smoke de interface ou contrato de UI.
+- [x] Diagnosticar e corrigir a falha após o cadastro que impede novo login ou novo registro.
+- [x] Adicionar campo obrigatório de confirmação de senha, com validação de igualdade no cliente e no servidor.
+- [x] Tornar o cadastro idempotente e recuperável quando a conta for persistida antes de ocorrer falha na sessão.
+- [x] Cobrir cadastro, login, logout, recadastro e confirmação de senha por testes de integração.
+- [x] Capturar prévias do acesso e das áreas autenticadas em desktop, tablet e celular para revisão visual estruturada.
+- [x] Aplicar ajustes de layout, espaçamento, tipografia, contraste e controles com base em revisão de estilo das prévias.
+- [x] Validar novamente o look and feel responsivo após os refinamentos visuais.
+- [x] Incorporar iconografia SVG aeronáutica de traço técnico na autenticação, estudo, prontidão e notificações sem comprometer legibilidade.
+- [x] Restaurar a importação de utilidades Tailwind nas telas autenticadas e validar o layout real de estudo e prontidão no navegador integrado.
+- [x] Consolidar em um único smoke API-only a validação dos marcos 20 e 100 e a persistência de avaliações e plano versionado.
+- [x] Validar por assertions de layout e capturas a autenticação, estudo, retorno e prontidão em desktop, tablet e celular.
+- [x] Estender a iconografia SVG aeronáutica às notificações internas e incluí-la no contrato visual.
+- [x] Executar uma única verificação multi-dispositivo estável com assertions aprovadas para autenticação, estudo, retorno e prontidão em desktop, tablet e celular.
+- [x] Validar em uma execução única autenticação, estudo, retorno e prontidão em cada breakpoint: desktop, tablet e celular.
+- [x] Exibir estado de carregamento entre o feedback e a próxima questão, sem reapresentar a questão anterior.
+- [x] Desabilitar a ação de avanço durante a preparação do próximo item e tratar falha de carregamento.
+- [x] Cobrir a transição de próxima questão com teste de interface e verificar sua apresentação em dispositivos móveis.
+- [x] Proibir por validação de saída qualquer menção à fonte RAG, arquivos, módulos, caminhos, trechos, identificadores ou proveniência em enunciados, alternativas e explicações.
+- [x] Cobrir por testes as proibições de referência à fonte RAG em todos os conteúdos visíveis ao aluno.
+- [x] Bloquear expressões indiretas de proveniência, como “segundo o material EAD”, “conforme o conteúdo” e “neste módulo”, em toda saída visível do tutor.
+- [x] Executar um smoke móvel da ação Próxima questão, verificando a tela intermediária de carregamento antes de o novo item ser revelado.
+- [x] Reforçar o contraste e a contenção visual do estado de carregamento entre questões em dispositivos móveis.
+- [x] Validar por assertion e registro revisável a legibilidade, o painel e o contraste do carregamento intermediário em celular.
+- [x] Auditar questões e explicações do cache compartilhado contra referências diretas e indiretas à fonte RAG.
+- [x] Retirar da elegibilidade e limpar textos de cache incompatíveis sem alterar progresso, eventos ou mapas individuais.
+- [x] Verificar a limpeza por consulta, teste automatizado e compilação antes de publicar a atualização.
+- [x] Neutralizar os enunciados e alternativas dos itens retirados que ainda contenham referências proibidas à fonte RAG.
+- [x] Confirmar que nenhum texto visível permanece armazenado no cache, inclusive em itens retirados, e executar a compilação pós-limpeza.
+- [x] Avaliar os preços dos pacotes por simulado, compará-los com a referência concorrente e definir o posicionamento recomendado.
+- [x] Modelar créditos gratuitos, saldo pré-pago, catálogo de pacotes, pedidos, tentativas de pagamento e ledger imutável.
+- [ ] Integrar o PagBank com checkout seguro, webhook verificado e entrega idempotente de créditos após confirmação.
+- [x] Criar a experiência responsiva de compra e saldo, sem expor chaves, dados de pagamento ou lógica de confirmação no cliente.
+- [x] Cobrir cobrança, webhook, idempotência, autorização e uso de créditos com testes de domínio e integração.
+- [x] Aguardar credenciais de homologação PagBank e autorização de retomada; até lá, manter o checkout hospedado inativo e todos os CTAs comerciais bloqueados na fase experimental.
+- [x] Configurar e validar primeiro o checkout hospedado PagBank em Sandbox, com pedidos de teste, URL de retorno informativa e reconciliação server-to-server autenticada quando a assinatura do webhook estiver ausente.
+- [x] Armazenar o token Sandbox PagBank recebido em segredo de servidor e validar sua autenticação com uma consulta segura, sem criar pedido ou cobrança de teste.
+- [x] Restringir inicialmente o checkout Sandbox e validar que alunos e visitantes não conseguem abrir pedidos de teste; a regra foi posteriormente refinada para o papel homologation.
+- [x] Implementar o checkout hospedado PagBank Sandbox no servidor com catálogo exclusivamente server-side, referência idempotente, retorno informativo e link HTTPS `PAY` validado.
+- [x] Implementar a rota de webhook Sandbox com corpo bruto, validação SHA-256 em tempo constante, registro deduplicado de evento e crédito transacional somente para `PAID`.
+- [x] Validar autenticação Sandbox, criação de checkout de teste, assinatura do webhook sintético, crédito idempotente persistido e bloqueio para visitantes/alunos.
+- [x] Validar a restrição inicial do checkout Sandbox e, posteriormente, a separação de privilégios para o papel homologation.
+- [x] Concluir um pagamento PagBank Sandbox pelo checkout hospedado e confirmar por reconciliação autenticada a mudança de pedido e o crédito único no ledger.
+- [x] Implementar reconciliação Sandbox por consulta server-to-server autenticada ao pedido PagBank, tratada como defesa adicional e sem crédito por payload de webhook não assinado.
+- [ ] Implementar e validar a política de dupla verificação no endpoint e nas credenciais PagBank de produção, incluindo `x-authenticity-token` e reconciliação TLS autenticada antes de qualquer crédito.
+- [ ] Preparar a homologação PagBank em domínio público estável, com rotas e credenciais segregadas entre Sandbox e produção antes de ativar cobrança real.
+- [ ] Ativar explicitamente o modo PagBank Sandbox no domínio publicado apenas para administradores de homologação, sem habilitar produção.
+- [x] Separar os papéis user, admin e homologation, com acesso PagBank Sandbox limitado exclusivamente à conta de homologação.
+- [x] Preparar um anexo JSON sanitizado com requests e responses PagBank para upload na solicitação de homologação.
+- [x] Criar e validar a conta administrativa exclusiva pagbank@apia.app.br para homologação PagBank, com senha armazenada somente em hash.
+- [x] Formalizar a doutrina PagBank de dupla verificação: webhook como sinal, consulta TLS autenticada ao pedido como confirmação e ledger idempotente como guarda final.
+- [x] Aplicar a reconciliação autenticada para qualquer assinatura ausente, malformada ou divergente, sem usar o payload de entrada como fonte de verdade financeira.
+- [x] Preparar solicitação técnica ao suporte PagBank sobre a ausência de assinatura no Sandbox e o procedimento oficial de homologação.
+- [x] Enviar ao PagBank a solicitação de homologação com anexo técnico sanitizado e instruções de acesso segregadas.
+- [ ] Aguardar e analisar o retorno formal do PagBank antes de alterar rotas, credenciais ou habilitar produção.
+- [x] Investigar e corrigir o HTTP 401 recebido na notificação real PagBank Sandbox, preservando validação criptográfica e sem creditar eventos não autenticados.
+- [ ] Reenviar novamente uma notificação real PagBank Sandbox após a correção final e registrar evidência server-side de reconciliação idempotente.
+- [x] Recuperar a abertura visual do login Sandbox PagBank antes de solicitar novamente a autenticação manual para o reenvio externo.
+- [ ] Validar explicitamente o reenvio externo no painel Sandbox do titular após a correção, com HTTP retornado e confirmação de ausência de duplicidade no ledger.
+- [x] Diagnosticar e corrigir a ordem Sandbox que recebeu HTTP 202 sem refletir automaticamente os créditos na conta PPA.
+- [x] Refinar a mensagem de retorno do PagBank para informar processamento e confirmação automática por servidor, sem declarar crédito antes da conciliação autenticada.
+- [x] Validar uma nova compra Sandbox de ponta a ponta, confirmando o crédito automático único e a atualização do saldo após o redirecionamento ao PPA.
+- [x] Exibir no retorno do checkout o estado real de conciliação do pedido do próprio usuário, incluindo créditos registrados somente após confirmação autenticada.
+- [x] Correlacionar o segundo reenvio PagBank Sandbox que retornou 401 com indicadores seguros de cabeçalho, corpo e proxy no servidor, sem registrar conteúdo sensível.
+- [x] Registrar e investigar o pagamento Sandbox pago que recebeu 202 sem assinatura, garantindo que não haja crédito, pedido confirmado ou lançamento de ledger até uma confirmação autenticada.
+- [x] Tornar a identidade exibida do comprador independente da titularidade dos créditos, pois o checkout pode ser pago por terceiro e o PagBank gerencia seus próprios dados de pagador.
+- [x] Desvincular explicitamente o pagador PagBank da titularidade dos créditos, preservando o histórico por `userId`, referência interna e identificador externo `ORDE_...`.
+- [x] Remover do payload de checkout os dados pessoais do perfil PPA que não são necessários quando o comprador pode ser um terceiro.
+- [x] Analisar o registro do pedido PagBank Sandbox pago, sem reproduzir dados sensíveis, e documentar o motivo de o webhook não ter assinatura.
+- [x] Declarar `payment_notification_urls` no Checkout PagBank além de `notification_urls`, garantindo que mudanças de pagamento sejam notificadas no endpoint autenticado.
+- [x] Manter o token Sandbox atual exclusivamente no cofre de segredos para homologação, conforme autorização do titular; nenhuma credencial Sandbox será usada em produção.
+- [x] Tornar o nome exibido pelo PagBank irrelevante para a titularidade de créditos, removendo a associação indevida ao perfil PPA quando o pagador pode ser terceiro.
+- [x] Confirmar a compatibilidade do checkout hospedado PagBank com iframe e registrar uma alternativa segura caso o provedor a bloqueie.
+- [x] Implementar módulo de pagamento sobreposto com sombreamento, foco acessível, fechamento explícito e retorno visual no padrão PPA, sem crédito por URL de retorno.
+- [x] Substituir a abertura direta do checkout por um módulo sobreposto PPA que abre o PagBank hospedado em nova aba e comunica a transição de forma acessível.
+- [x] Exibir no retorno `checkout=sandbox` um estado informativo PPA, com atualização de saldo e fechamento explícito, sem consultar ou alterar o pedido pela URL.
+- [x] Registrar e isolar a limitação do Sandbox PagBank que omite `x-authenticity-token`: o ambiente responde 202 sem processar o evento; produção continua exigindo assinatura SHA-256 válida.
+- [x] Disponibilizar a página de planos antes do cadastro, sem expor dados, progresso ou controles de conta.
+- [x] Adicionar na tela pública um caminho claro para conhecer os planos e retornar ao cadastro ou login.
+- [x] Validar em desktop e celular a rota pública de planos, o retorno ao acesso e os controles de compra desativados.
+- [x] Salvar futuras versões para revisão manual do usuário antes de qualquer publicação pública.
+- [x] Validar em navegador real, em desktop e celular, a ida do acesso público aos planos e o retorno ao cadastro.
+- [x] Registrar a política de revisão manual pré-publicação no processo do projeto e verificar um checkpoint salvo sem publicação automática.
+- [x] Equalizar o espaçamento acima e abaixo do link público de planos na tela de acesso, ampliando o respiro inferior.
+- [x] Destacar o link de planos com fundo branco semitransparente, texto em negrito e tamanho tipográfico ligeiramente maior.
+- [x] Validar o novo destaque do link na prévia móvel antes de salvar a versão para revisão.
+- [x] Capturar a tela pública de acesso em celular em contexto sem sessão para validar visualmente o novo destaque do link de planos.
+- [x] Bloquear e limpar a formulação indireta “materiais de estudo” e equivalentes remanescentes no cache e na saída do tutor.
+- [x] Auditar e limpar cache e questões abertas para todos os marcadores indiretos proibidos pela barreira RAG, não apenas materiais de estudo.
+- [x] Comprovar por consulta única que os marcadores indiretos proibidos não permanecem em conteúdos de cache elegíveis ou questões abertas.
+- [x] Executar uma consulta única consolidada que comprove zero marcadores RAG proibidos no cache e nas questões abertas.
+- [x] Renomear o plano Rota para Panorâmico e o plano Navegação para Ponte Aérea em toda a experiência de planos.
+- [x] Validar os nomes comerciais atualizados na página pública e na versão autenticada antes de salvar o checkpoint para revisão.
+- [x] Validar na área autenticada a exibição de Panorâmico e Ponte Aérea e registrar evidência revisável antes do checkpoint.
+- [x] Fixar o pacote de 3.000 questões em R$ 44,90, equivalente a 30 simulados e aproximadamente R$ 1,50 por simulado.
+- [x] Criar página responsiva de planos com aviso profissional sobre acesso experimental gratuito, prazo e consumo indeterminados.
+- [x] Exibir os cinco níveis de crédito, incluindo 3.000 questões por R$ 44,90, em cards de comparação claros.
+- [x] Exibir botões Habilitar desativados, acessíveis e explicitamente vinculados à integração de pagamento pendente.
+- [x] Adicionar acesso à página de planos pela navegação autenticada e validar desktop e celular.
+- [x] Validar visualmente a página de planos em celular, incluindo comunicado experimental, cinco cards e botões Habilitar desativados.
+- [x] Auditar o catálogo de conceitos, a cobertura atual do cache e a capacidade do modelo antes do aquecimento.
+- [x] Definir uma distribuição uniforme e idempotente de quatro questões por conceito entre os conceitos canônicos do mapa.
+- [x] Implementar trabalhador de aquecimento com RAG, deduplicação, explicações para correto/incorreto/Me ensine e checkpoints de progresso.
+- [x] Gerar ao menos 3.488 itens de cache em lotes controlados, sem expor ou citar a origem RAG.
+- [x] Auditar cobertura por conceito, qualidade estrutural, ineditismo, explicações e ausência de referências à fonte antes da revisão.
+- [x] Salvar o resultado do aquecimento para revisão manual, sem publicar automaticamente.
+- [x] Gerar e auditar a rodada 1: uma questão com três explicações para cada um dos 872 conceitos.
+- [x] Registrar metadados de onda nos itens gerados e comprovar por conceito a origem da cobertura da rodada 1.
+- [x] Gerar e auditar a rodada 2: uma segunda questão distinta com três explicações para cada um dos 872 conceitos.
+- [x] Gerar e auditar a rodada 3: uma terceira questão distinta com três explicações para cada um dos 872 conceitos.
+- [x] Gerar e auditar a rodada 4: uma quarta questão distinta com três explicações para cada um dos 872 conceitos.
+- [x] Reforçar no gerador os limites explícitos de tamanho das alternativas e regenerar seletivamente o conceito pendente da quarta onda.
+- [x] Criar migração não destrutiva para saldo, pedidos, tentativas, eventos de webhook e ledger de créditos, com valores em centavos e referências únicas.
+- [x] Garantir o crédito inicial idempotente, consulta isolada por aluno e futuro débito atômico por questão apresentada, inativo durante a fase experimental.
+- [x] Exibir saldo autenticado e estado de checkout em preparação, com carregamento, erro acessível e CTAs comerciais ainda bloqueados.
+- [x] Validar em desktop e celular a apresentação do saldo e a preservação de todos os controles de contratação desativados.
+- [x] Cobrir catálogo, saldo experimental, proteção de rota, referências idempotentes, isolamento de pedido e imutabilidade estrutural do ledger com testes automatizados.
+- [x] Auditar a matriz atual de 100 questões contra as cinco matérias e todos os capítulos do mapa curricular, antes de alterar a seleção adaptativa.
+- [x] Criar um diagnóstico inicial obrigatório de 100 questões, com 20 questões por matéria e cobertura mínima de um item por capítulo.
+- [x] Implementar a regra escolhida C: uma das 20 questões de Regulamentos deve avaliar e registrar cobertura de dois capítulos compatíveis, sem reduzir a rastreabilidade por capítulo.
+- [x] Persistir o estado do diagnóstico e impedir a escolha de modo antes de sua conclusão, sem afetar dados e sessões de outros alunos.
+- [x] Implementar o modo Simulado com matriz de prova e o modo Tutor orientado ao reforço de pontos fracos após o diagnóstico.
+- [x] Exibir progresso do diagnóstico e uma escolha acessível de modo de estudo, preservando o fluxo questão–retorno–próxima questão.
+- [x] Cobrir matriz, capítulos, transições, isolamento, retomada e experiência responsiva dos modos com testes automatizados e validação visual.
+- [x] Adicionar testes de integração para concluir 100 respostas diagnósticas, verificar liberação de escolha de modo e bloqueio antes desse ponto.
+- [x] Adicionar testes de integração para retomada real de sessão/programa e para os fluxos completos dos modos Simulado e Tutor.
+- [x] Validar visualmente em desktop e celular a tela de escolha de modo e pelo menos uma tela ativa de cada modo após o diagnóstico.
+- [x] Adicionar testes de integração que executem um ciclo completo do modo Simulado, com entrega, resposta, continuação e encerramento ou retomada da matriz após a seleção.
+- [x] Adicionar testes de integração que executem um ciclo completo do modo Tutor após a seleção, com entrega, resposta registrada e continuação sem matriz fixa.
+- [x] Validar visualmente em desktop e celular o fluxo real pós-diagnóstico, incluindo a liberação, escolha de modo e uma questão ativa em Simulado e Tutor sem flags de visualização temporária.
+- [x] Executar validação visual end-to-end exclusivamente pela interface: cadastrar, responder as 100 questões diagnósticas, escolher Simulado e Tutor na tela e capturar os estados em desktop e celular sem semeadura direta no banco.
+- [x] Isolar a causa da intermitência do retorno visual durante o percurso de 100 respostas, com evidências de cliente, servidor e rede.
+- [x] Corrigir a intermitência sem enfraquecer o isolamento, o cache, o RAG server-side ou o fluxo de avaliações.
+- [x] Repetir e documentar a validação end-to-end por interface do diagnóstico, escolha de modo, Simulado e Tutor após a correção.
+- [x] Restaurar a completude do cache após a validação: 3.505 itens aprovados, cada um com retornos correto, incorreto e “Me ensine”; nenhum item aprovado sem explicação.
+- [x] Investigar e corrigir a falha real de geração da avaliação de marco após a questão 100, mantendo a barreira anti-vazamento RAG.
+- [x] Reexecutar o fluxo completo até a questão 100 e comprovar que a avaliação de marco é gerada e persistida com sucesso antes da liberação de modalidade.
+- [x] Conceder perfil administrativo permanente à conta marcos.lohmann@gmail.com para governança da plataforma e homologação PagBank Sandbox.
+- [x] Revogar o privilégio administrativo de marcos.lohmann@gmail.com, preservando sua conta e seus dados de estudo.
+- [x] Criar a conta administrativa permanente webmaster@apia.app.br com senha armazenada exclusivamente como hash seguro.
+- [x] Validar que a conta webmaster@apia.app.br acessa as rotas administrativas e que marcos.lohmann@gmail.com não mantém privilégios elevados.
+- [x] Armazenar host, porta, usuário e senha SMTP em segredos de servidor para e-mail transacional com TLS, sem incluí-los em código ou arquivos.
+- [x] Validar a conexão SMTP sem enviar mensagens e manter qualquer disparo automático de e-mail desativado até autorização específica.
+- [x] Detectar o mecanismo de autenticação SMTP oferecido pelo servidor e repetir a validação TLS com as credenciais já configuradas, sem enviar e-mails.
+- [x] Restaurar a senha SMTP atualizada pelo titular no cofre de segredos e executar uma única validação TLS sem destinatário ou entrega.
+- [x] Efetuar uma única entrega SMTP de teste autorizada para webmaster@apia.app.br somente após autenticação TLS aceita, mantendo automações de e-mail desativadas.
+- [ ] Aguardar confirmação humana de recebimento do e-mail de teste e definir explicitamente quais fluxos transacionais poderão ser ativados no futuro.
+- [x] Remodelar o cadastro para solicitar somente e-mail, criar conta inativa com senha temporária aleatória em hash e enviar instruções de ativação por e-mail.
+- [x] Persistir expiração, uso único e troca obrigatória para credenciais temporárias, bloqueando estudo e operações protegidas até a atualização de senha.
+- [x] Implementar a troca de senha autenticada com senha atual, nova senha e confirmação, incluindo validações server-side e revogação segura da credencial temporária.
+- [x] Implementar o fluxo público “Esqueci minha senha” com confirmação explícita, emissão de senha temporária, envio de e-mail e marcação de troca obrigatória no próximo login.
+- [x] Integrar as notificações de ativação e recuperação ao SMTP server-side com limites, conteúdo mínimo e nenhum segredo ou senha persistida em logs.
+- [x] Aplicar aos e-mails transacionais um template HTML compatível com clientes de e-mail, com identidade visual azul e aeronáutica do PPA, versão textual alternativa e CTA seguro.
+- [x] Atualizar as telas de cadastro, login e menu autenticado para ativação, recuperação e troca obrigatória de senha em desktop e celular.
+- [x] Cobrir por testes unitários e de integração a expiração, uso único, isolamento, autorização, troca obrigatória e inexistência de vazamento de senhas.
+- [ ] Validar os três fluxos por interface, revisar o checklist e salvar checkpoint para revisão manual sem publicação.
+- [x] Adicionar login por Conta Google como opção complementar ao acesso local, sem remover cadastro, senha local ou isolamento por usuário.
+- [x] Vincular a identidade Google verificada à conta local existente pelo e-mail normalizado e impedir a criação de contas duplicadas ou elevação de privilégios.
+- [x] Implementar callback OAuth com validação de estado, nonce, emissor, audiência e expiração do ID token, sem depender de dados fornecidos pelo cliente.
+- [x] Atualizar a tela de acesso com a entrada Google e comunicar claramente a vinculação ou criação da conta.
+- [x] Cobrir por testes os cenários de conta nova, conta existente, token inválido, divergência de e-mail e isolamento de sessões Google/local.
+- [x] Exibir a Conta Google como escolha opt-in visível, mantendo o fluxo de e-mail local separado e aceitando e-mails verificados pelo próprio Google.
+- [x] Validar com segurança as credenciais Google OAuth no endpoint de token antes de habilitar o fluxo de usuários.
+- [x] Isolar testes SMTP dependentes de rede atrás de uma flag explícita para preservar a confiabilidade da suíte padrão.
+- [x] Tornar “Continuar com a Conta Google” uma opção visível e principal nas telas de criar conta e entrar, sem exigir preenchimento prévio do e-mail.
+- [x] Apresentar a alternativa de e-mail local após a escolha do método, mantendo o mesmo padrão visual aeronáutico do PPA.
+- [x] Verificar em interface pública a presença dos dois métodos antes do preenchimento, incluindo a abertura segura da seleção Google sem e-mail prévio.
+- [x] Remover a restrição e a mensagem visual de Gmail, aceitando qualquer Conta Google com e-mail verificado, incluindo Google Workspace.
+- [x] Substituir o marcador decorativo pelo SVG oficial do Google fornecido, com rótulo acessível e sem alterar a ação OAuth.
+- [x] Criar logotipo compacto PNG para “PPA Teórico — Tutor Adaptativo”, com até 150 × 55 px e menos de 500 KB.
+- [x] Adotar o logotipo oficial fornecido como marca principal do aplicativo e aplicá-lo aos cabeçalhos da jornada do aluno.
+- [x] Criar e configurar favicon derivado do avião, altímetro e rosa dos ventos, sem a parte textual do logotipo.
+- [x] Recortar as margens transparentes excedentes do logotipo oficial e atualizar o ativo de cabeçalho sem distorcer ou perder elementos da marca.
+- [x] Criar variante dark do logotipo oficial, sem caixa branca externa e com tipografia branca/azul-claro para os fundos escuros do PPA.
+- [x] Substituir a variante dark gerada pela arte dark oficial fornecida pelo responsável, sem alteração de cores, tipografia ou desenho.
+- [x] Ajustar o logotipo oficial da tela pública pré-login para largura responsiva máxima de 50vw, sem afetar os cabeçalhos autenticados.
+- [x] Investigar a solicitação real de “Esqueci minha senha” que não chegou ao destinatário, usando apenas metadados de auditoria, logs seguros e estado SMTP.
+- [ ] Corrigir e validar a entrega de recuperação sem exibir senha temporária, credenciais ou conteúdo pessoal em logs, banco ou interface.
+- [x] Auditar e corrigir SPF, DKIM e DMARC de apia.app.br sem sobrescrever registros existentes, antes de repetir o teste controlado de entrega ao Gmail.
+- [ ] Confirmar a propagação DNS corrigida e emitir exatamente uma recuperação controlada para marcos.lohmann@gmail.com, sem reenviar caso a entrega falhe.
+- [x] Corrigir o timeout de autenticação SMTP observado após a correção DNS e validar a conexão sem criar nova mensagem.
+- [x] Preservar o estado anterior de senha temporária e troca obrigatória quando a entrega SMTP falhar antes do aceite, incluindo contas ainda não ativadas.
+- [x] Classificar a causa técnica de falhas SMTP em metadados seguros, sem persistir resposta do servidor, conteúdo de mensagem, credenciais ou destinatário.
+- [ ] Comparar os metadados seguros de recuperação entre ambiente publicado e revisão, identificando por que a entrega não é aceita em produção sem repetir o envio.
+- [ ] Investigar a conectividade SMTP de saída do ambiente publicado e definir uma correção que não exponha credenciais nem dependa do servidor local de desenvolvimento.
+- [ ] Comparar a submissão SMTP do PPA à entrega confirmada via Cube para identificar a diferença de envelope, cabeçalhos ou rota sem reenviar uma senha temporária.
+- [ ] Comparar a injeção local via Cube com a submissão SMTP remota autenticada do PPA e corrigir a divergência de rota que impede a entrega ao Gmail.
+- [x] Alinhar envelope SMTP, remetente autenticado e Message-ID ao domínio da caixa, bloqueando divergência entre EMAIL_FROM e SMTP_USER.
+- [x] Descartar a hipótese de correção de PTR como causa principal após os cabeçalhos do Cube confirmarem entrega por rota distinta com SPF, DKIM e DMARC aprovados.
+- [ ] Solicitar ao provedor o rastreio da transição entre SMTP remoto autenticado e a fila Exim, pois a rota local via Cube chega ao Gmail com SPF, DKIM e DMARC aprovados.
+- [ ] Obter no cPanel Track Delivery a trilha do último envio do PPA por destinatário e horário, incluindo autenticação, host de origem, roteador, transporte, resultado e identificador Exim.
+- [ ] Solicitar ao provedor os dados de Track Delivery/Exim porque o recurso não está habilitado para a conta cPanel da aplicação.
+- [ ] Abrir chamado especializado ao provedor para investigar a submissão SMTP AUTH aceita, mas não entregue ao Gmail, incluindo horário, destinatário e rastreio Exim solicitado.
+- [ ] Confirmar à triagem HostGator o prosseguimento da análise especializada, sem acrescentar credenciais, conteúdo de e-mail ou novos reenvios.
+- [ ] Analisar a tentativa não entregue após o alinhamento de envelope pelo ID Exim, sem emitir uma nova senha temporária antes da conclusão do rastreio.
+- [x] Confirmar o último registro de recuperação solicitado pelo usuário, limitando a consulta a horário, estado e aceite SMTP sem novo envio.
+- [x] Analisar os retornos formais do PagBank, mapear exigências de homologação à implementação atual e registrar pendências sem ativar produção.
+- [x] Preparar, mediante autorização e com uma nova transação Sandbox controlada, um artefato JSON de request/response real para homologação PagBank, excluindo token de autorização, senhas e dados de pagamento desnecessários.
+- [x] Registrar exclusivamente para usuários com papel homologation as operações técnicas de homologação, com finalidade, estado, hashes, metadados sanitizados e trilha de exportação, sem token, senha, cartão ou conteúdo pedagógico.
+- [x] Restringir a consulta e a exportação de auditoria ao próprio usuário de homologação e impedir acesso por contas user e admin.
+- [x] Capturar de forma sanitizada a requisição e resposta reais do checkout Sandbox e da reconciliação para preparar o log PagBank solicitado, sem reter headers de autorização ou dados de pagamento.
+- [ ] Aguardar e analisar o retorno formal do PagBank sobre o artefato Sandbox enviado, sem ativar produção até aprovação explícita.
+- [ ] Aguardar o parecer final do PagBank, informado para até quatro dias úteis, mantendo Sandbox ativo e produção desativada até aprovação formal.
+- [x] Comparar os dois novos retornos PagBank com as evidências Sandbox enviadas e registrar qualquer nova exigência sem alterar a integração de produção.
+- [ ] Fornecer ao PagBank, pelo canal de homologação, um link PAY Sandbox válido de uma operação controlada, separado da exportação sanitizada e sem publicar o URL em documentação ou logs.
+- [x] Incluir o URL PAY literal somente na exportação restrita da conta de homologação, com aviso de validade e sem exibi-lo em tela, logs de aplicação ou documentação.
+- [x] Substituir a redação total por mascaramento parcial consistente para identidades e cartões, preservando campos técnicos auditáveis e removendo credenciais, códigos de autorização e dados de autenticação.
+- [ ] Exigir um novo ciclo Sandbox após a atualização para registrar abertura e retorno junto à criação, webhook, reconciliação e liquidação.
+- [ ] Verificar o novo artefato Sandbox enviado para confirmar URL PAY literal, mascaramento parcial e todos os eventos do ciclo no mesmo pedido de homologação.
+- [x] Registrar todo o ciclo PagBank da conta de homologação: criação, resposta, link PAY, abertura, retorno, webhook, consulta autenticada, reconciliação, crédito e resultado idempotente.
+- [x] Preservar em cada evento a evidência técnica necessária para auditoria, suprimindo somente segredos, credenciais, dados de cartão e identificadores pessoais não indispensáveis.
+- [x] Criar perfil cadastral isolado por aluno com nome obrigatório, nascimento, gênero, cidade, UF e origem do curso teórico PPA; e-mail, id e openid não serão editáveis ou exibidos.
+- [x] Criar histórico isolado de tentativas ANAC com data, pontuações MET/REG/NAV/MEC/TVO e resultado aprovado/reprovado.
+- [x] Exibir troca de senha nos dados cadastrais somente para contas locais e orientar contas Google a usar seu provedor de identidade.
+- [x] Implementar interface responsiva de dados cadastrais e tentativas ANAC com validação server-side e cobertura de isolamento entre usuários.
+- [x] Substituir o item de navegação Dados cadastrais por acesso clicável no bloco de conta do aluno, no desktop e no menu móvel.
+- [x] Armazenar a credencial PagBank de produção exclusivamente em segredo segregado do Sandbox, sem a expor em código, logs ou interface.
+- [ ] Revisar a configuração de produção PagBank, garantindo endpoint, webhook, assinatura e reconciliação segregados do Sandbox antes de ativar cobrança.
+- [ ] Validar a integração de produção sem criar cobrança e solicitar autorização explícita antes de habilitar checkout comercial ou publicar alterações.
+- [x] Confirmar os requisitos PagBank para Connect Token Challenge e fornecer uma URL pública dedicada, testada e sem efeitos financeiros para cadastro manual.
+- [x] Gerar um par RSA de 2048 bits para Connect Token Challenge, preservar a chave privada somente em segredo de servidor e disponibilizar apenas a chave pública em JSON HTTPS.
+- [x] Testar a URL pública Connect Token Challenge no domínio do PPA antes do cadastro manual no PagBank, sem criar cobrança, checkout ou pedido.
+- [x] Executar nova sonda PagBank de produção, exclusivamente por leitura, após o cadastro do Connect Token Challenge e registrar o resultado sem ativar cobrança.
+- [x] Reimplantar a revisão com os segredos Connect carregados no ambiente publicado e confirmar HTTP 200 da URL pública antes da sonda do token.
+- [x] Revalidar o endpoint Connect e o token PagBank de produção após a publicação confirmada, sem criar operações financeiras.
+- [x] Codificar o par RSA Connect em formato robusto para variáveis de ambiente publicadas e revalidar a resposta pública antes da sonda do token.
+- [x] Confirmar HTTP 200 da URL Connect após a republicação da correção e então repetir a sonda do token de produção somente por leitura.
+- [x] Verificar o endpoint Connect após a publicação Base64 e somente então validar o token PagBank por consulta sem efeito financeiro.
+- [x] Diagnosticar o HTTP 403 da sonda PagBank de produção com base na documentação oficial, sem substituir token nem ativar checkout.
+- [x] Migrar a configuração RSA Connect para valores Base64 de linha única, compatíveis com o ambiente publicado, e validar a correspondência criptográfica antes da publicação.
+- [x] Corrigir a identificação de hostname na submissão SMTP conforme o rastreio Exim `fightspamHG` e validar a conexão TLS autenticada sem entrega.
+- [ ] Após publicação, realizar somente se autorizado um envio técnico controlado ao destinatário já aprovado e confirmar no Exim que o HELO/EHLO público não aciona `fightspamHG`.
+- [ ] Retestar o token PagBank de produção por consulta somente leitura após a publicação atual, sem criar checkout, pedido, cobrança ou crédito.
+- [x] Retestar o token PagBank de produção por consulta somente leitura após a publicação atual, sem criar checkout, pedido, cobrança ou crédito; o HTTP 403 de allowlist permaneceu até a homologação formal.
+- [ ] Confirmar os requisitos de cadastro da aplicação PagBank de produção e orientar nome, identificador, descrição e URL sem habilitar checkout comercial.
+- [ ] Implementar URL de notificação PagBank com autenticação técnica dedicada, sem reutilizar contas de aluno, admin ou homologação e sem ativar checkout comercial.
+- [x] Criar migração aditiva para sessões de atividade, eventos operacionais, uso e preço de LLM, recursos observados e custos operacionais, sem dados pessoais ou conteúdos sensíveis.
+- [x] Instrumentar atividade autenticada, operações críticas e chamadas de LLM com telemetria de melhor esforço, limites de tempo e nenhuma persistência de prompts, respostas ou contexto RAG.
+- [x] Implementar consultas agregadas administrativas de comercial, produto, operação, confiabilidade e custos, retornando null para métricas sem fonte ou denominador.
+- [x] Criar procedimentos tRPC adminAnalytics exclusivos de admin e telemetria de atividade protegida, bloqueando user e homologation.
+- [x] Construir o Console Gerencial responsivo com tabs Comercial e produto / Operação e confiabilidade, gráficos acessíveis e estados explícitos de cobertura.
+- [x] Adicionar endpoint mínimo /api/health sem dados internos e sem inferir disponibilidade sem sonda externa independente.
+- [x] Cobrir autorização, privacidade, ausência de dados, percentuais, atividade, telemetria LLM e custos com Vitest; validar desktop e mobile antes de checkpoint.
+- [x] Investigar e corrigir a ausência do item Gestão para webmaster@apia.app.br apesar do papel admin, validando versão publicada e sessão efetiva sem alterar permissões indevidamente.
+- [x] Diagnosticar e corrigir a falha de carregamento das métricas do Console Gerencial no ambiente publicado, mantendo isolamento e sem expor dados internos.
+- [x] Armazenar a chave Pix PagBank de produção exclusivamente em segredo de servidor, sem expô-la em código, logs, interface ou exportações de auditoria.
+- [x] Revisar o fluxo de checkout de produção e a exportação de auditoria para o teste final de homologação, preservando PAY literal quando exigido e mascarando credenciais, dados pessoais e pagamento.
+- [x] Validar a preparação de produção sem checkout e solicitar confirmação explícita antes de criar uma cobrança real de homologação.
+- [ ] Após confirmação, criar um único checkout de homologação em produção e preparar a exportação técnica sanitizada para envio ao PagBank.
+- [x] Capturar uma única resposta de diagnóstico PagBank em modo leitura e gerar relatório técnico sanitizado, preservando status, cabeçalhos e erro sem token, chave Pix ou dados pessoais.
+- [x] Invalidar a evidência de consulta isolada como insuficiente para homologação PagBank; ela não deve ser encaminhada como teste de Checkout hospedado.
+- [x] Analisar o ciclo Sandbox fornecido e preparar em produção os passos Connect Token Challenge, checkout real, link PAY, retorno, webhook, reconciliação e liquidação idempotente.
+- [x] Configurar o Checkout de produção separado do Sandbox, com URL PAY literal somente na exportação de homologação e sem mistura de credenciais ou ambientes.
+- [x] Validar a criação técnica de checkout de produção e preparar a auditoria completa do ciclo para homologação.
+- [x] Após confirmação explícita, concluir o pagamento por cartão do checkout de homologação e exportar a evidência sanitizada do ciclo completo.
+- [x] Confirmar com consulta sem cache que o domínio publicado serve o ciclo de produção do checkpoint antes de criar o checkout de homologação autorizado.
+- [x] Verificar retorno, webhook, reconciliação e liquidação do checkout PagBank de produção concluído, e exportar a evidência sanitizada para homologação.
+- [x] Corrigir os rótulos do módulo de pagamento para identificar corretamente o ambiente de produção e não mencionar Sandbox no checkout de homologação.
+- [x] Publicar a correção textual de ambiente do módulo de pagamento após revisão manual, sem iniciar novo checkout.
+- [x] Desabilitar o modo técnico temporário de Checkout PagBank produção após a homologação, preservando apenas o histórico e a exportação de auditoria.
+- [x] Preparar o Checkout PagBank de produção para alunos autenticados, mantendo catálogo server-side, retorno, webhook, reconciliação autenticada e crédito idempotente.
+- [x] Atualizar a comunicação dos planos para apresentar os 100 créditos iniciais, os preços e as condições comerciais com clareza.
+- [x] Validar que alunos só recebem créditos após confirmação PagBank e que o acesso de homologação/auditoria continua isolado.
+- [x] Após confirmação final, habilitar `PAGBANK_PRODUCTION_COMMERCIAL_MODE=enabled` e publicar a revisão para abrir compras ao público em produção.
+- [x] Substituir “Comunicado operacional” por “Fase de Diagnóstico” e exibir “Treino Adaptativo” após o encerramento dos créditos diagnósticos.
+- [x] Informar que o checkout PagBank comercial está disponível por cartão, Pix e boleto, sem sugerir que permanece em preparação.
+- [x] Habilitar os botões de compra comercial para alunos autenticados e o CTA de entrada para visitantes no domínio de produção.
+- [x] Remover o botão e o aviso de indisponibilidade do card Diagnóstico inicial, deixando explícito que os 100 créditos são um benefício único de novas contas.
+- [x] Substituir os textos técnicos do checkout por mensagens comerciais orientadas ao aluno, com clareza sobre cartão, Pix, boleto e liberação de créditos após a confirmação do pagamento.
+- [x] Preparar o logo PagBank fornecido e posicioná-lo no quadro superior direito da página de planos, com enquadramento responsivo e sem competir com a marca PPA.
+- [x] Criar e aplicar uma arte transparente de compra segura e parceria PagBank no quadro superior direito da página de planos, substituindo o logo simples.
+- [x] Validar o certificado TLS do domínio publicado e os direitos de uso de qualquer selo de confiança antes de exibi-lo no PPA.
+- [x] Criar página pública de Políticas de Uso, Cyber-Segurança e Privacidade/LGPD com linguagem revisável juridicamente e alinhada à política vigente de dados do PPA.
+- [x] Adicionar link persistente para Políticas de Uso, Cyber-Segurança e LGPD no canto inferior esquerdo das jornadas pública e autenticada.
+- [x] Incorporar integralmente a política de uso complementar à página pública, adaptando a finalidade exclusivamente à preparação teórica do PPA e mantendo a política vigente de privacidade.
+- [x] Incluir o canal de contato `simulados@apia.app.br` e remover o aviso visual de revisão jurídica da página de políticas.
+- [x] Integrar o link de políticas ao layout de cada página, no canto inferior esquerdo do conteúdo, sem posicionamento fixo relativo ao navegador.
+- [x] Substituir a caixa de políticas sobreposta por rodapé estrutural em fluxo normal, alinhado à esquerda e sem cobrir nenhum elemento da interface.
+- [x] Remover a mensagem residual de compra indisponível da página de planos, mantendo somente a jornada comercial ativa dos pacotes pagos.
+
+- [x] Criar catálogo público sanitizado da taxonomia curso → matéria → capítulo → tópico → conceito, sem IDs, RAG, prioridades ou dados individuais.
+- [x] Disponibilizar a visualização pública dos 872 conceitos canônicos com árvore expansível, busca, contagens e explicação de cobertura por créditos.
+- [x] Adicionar o link “Mapa de conceitos” ao rodapé estrutural ao lado de “Políticas e segurança”, sem sobreposição do conteúdo.
+- [x] Cobrir a serialização pública, a ausência de identificadores internos e os contratos de rota e interface com testes automatizados.
+- [x] Validar tipos, suíte completa, build de produção, desktop, celular e filtragem interativa da árvore.
+- [x] Revisar a voz editorial da página pública de conceitos para incentivar curiosidade e estudo, com menos pragmatismo técnico e sem alterar as regras reais de cobertura.

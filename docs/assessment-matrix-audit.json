@@ -1,0 +1,177 @@
+{
+  "summary": {
+    "matters": 5,
+    "chapters": 72,
+    "concepts": 872,
+    "totalQuestions": 100,
+    "minimumChapterCoverage": 72,
+    "remainingQuestionSlots": 28,
+    "feasible": false,
+    "approvedCrossChapterRule": {
+      "matterId": "REG",
+      "chapterIds": [
+        "REG-C07",
+        "REG-C08"
+      ],
+      "conceptIds": [
+        "REG-C07-T01-K02",
+        "REG-C08-T01-K02"
+      ]
+    },
+    "feasibleWithApprovedCrossChapterRule": true
+  },
+  "matters": [
+    {
+      "id": "CTA",
+      "name": "Conhecimentos Técnicos de Aeronaves",
+      "chapters": 13,
+      "concepts": 198,
+      "allocatedQuestions": 20,
+      "additionalQuestionsAfterChapterCoverage": 7,
+      "feasible": true
+    },
+    {
+      "id": "MET",
+      "name": "Meteorologia Aeronáutica",
+      "chapters": 16,
+      "concepts": 170,
+      "allocatedQuestions": 20,
+      "additionalQuestionsAfterChapterCoverage": 4,
+      "feasible": true
+    },
+    {
+      "id": "NAV",
+      "name": "Navegação Aérea VFR (Visual Flight Rules)",
+      "chapters": 12,
+      "concepts": 133,
+      "allocatedQuestions": 20,
+      "additionalQuestionsAfterChapterCoverage": 8,
+      "feasible": true
+    },
+    {
+      "id": "TV",
+      "name": "Teoria de Voo de Baixa Velocidade",
+      "chapters": 10,
+      "concepts": 153,
+      "allocatedQuestions": 20,
+      "additionalQuestionsAfterChapterCoverage": 10,
+      "feasible": true
+    },
+    {
+      "id": "REG",
+      "name": "Regulamentos de Tráfego Aéreo",
+      "chapters": 21,
+      "concepts": 218,
+      "allocatedQuestions": 20,
+      "additionalQuestionsAfterChapterCoverage": -1,
+      "feasible": false
+    }
+  ],
+  "regulationChapters": [
+    {
+      "id": "REG-C01",
+      "name": "Abreviaturas e definições",
+      "concepts": 11
+    },
+    {
+      "id": "REG-C02",
+      "name": "Alfabeto fonético e unidades de medida",
+      "concepts": 9
+    },
+    {
+      "id": "REG-C03",
+      "name": "Fraseologia padrão e teste de equipamentos radiotelefônicos",
+      "concepts": 13
+    },
+    {
+      "id": "REG-C04",
+      "name": "Autoridades aeronáuticas",
+      "concepts": 9
+    },
+    {
+      "id": "REG-C05",
+      "name": "Aeronaves e aeródromos",
+      "concepts": 10
+    },
+    {
+      "id": "REG-C06",
+      "name": "Circuito de tráfego aéreo padrão e sinalizações",
+      "concepts": 15
+    },
+    {
+      "id": "REG-C07",
+      "name": "Regras do ar",
+      "concepts": 14
+    },
+    {
+      "id": "REG-C08",
+      "name": "Regras de voo visual",
+      "concepts": 12
+    },
+    {
+      "id": "REG-C09",
+      "name": "Espaço aéreo brasileiro",
+      "concepts": 13
+    },
+    {
+      "id": "REG-C10",
+      "name": "Serviços e órgãos ATS (Air Traffic Services)",
+      "concepts": 9
+    },
+    {
+      "id": "REG-C11",
+      "name": "Controle de área e controle de aproximação",
+      "concepts": 8
+    },
+    {
+      "id": "REG-C12",
+      "name": "Torre de controle",
+      "concepts": 9
+    },
+    {
+      "id": "REG-C13",
+      "name": "AFIS (Aerodrome Flight Information Service) e FIS (Flight Information Service)",
+      "concepts": 8
+    },
+    {
+      "id": "REG-C14",
+      "name": "Serviço de alerta",
+      "concepts": 8
+    },
+    {
+      "id": "REG-C15",
+      "name": "Sistema de Investigação e Prevenção de Acidentes Aeronáuticos",
+      "concepts": 8
+    },
+    {
+      "id": "REG-C16",
+      "name": "Radar",
+      "concepts": 9
+    },
+    {
+      "id": "REG-C17",
+      "name": "Interceptação",
+      "concepts": 8
+    },
+    {
+      "id": "REG-C18",
+      "name": "Serviço de Informação Aeronáutica",
+      "concepts": 8
+    },
+    {
+      "id": "REG-C19",
+      "name": "Plano de voo",
+      "concepts": 13
+    },
+    {
+      "id": "REG-C20",
+      "name": "Lei do Aeronauta e Código Brasileiro de Aeronáutica",
+      "concepts": 10
+    },
+    {
+      "id": "REG-C21",
+      "name": "Licença de Piloto Privado de Avião",
+      "concepts": 14
+    }
+  ]
+}

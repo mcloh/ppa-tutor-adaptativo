@@ -1,0 +1,162 @@
+{
+  "document": {
+    "title": "PPA Teórico — Exemplos sanitizados de integração PagBank para homologação",
+    "environment": "sandbox",
+    "purpose": "Evidenciar a criação de checkout hospedado, consulta autenticada de pedido e confirmação idempotente de créditos.",
+    "redactions": [
+      "Nenhum token, senha, CPF/CNPJ, telefone, e-mail, URL de checkout emitida, referência de pedido real, identificador de cobrança real ou dado de cartão está presente.",
+      "Todos os valores entre <...> são marcadores substitutos e não correspondem a credenciais ou transações reais."
+    ]
+  },
+  "examples": [
+    {
+      "name": "1. Criar checkout hospedado",
+      "request": {
+        "method": "POST",
+        "url": "https://sandbox.api.pagseguro.com/checkouts",
+        "headers": {
+          "Authorization": "Bearer <PAGBANK_SANDBOX_TOKEN>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "reference_id": "ppa-<ACCOUNT_ID>-<RANDOM_REFERENCE>",
+          "expiration_date": "<ISO_8601_TIMESTAMP_PLUS_2_HOURS>",
+          "customer_modifiable": true,
+          "items": [
+            {
+              "reference_id": "essential",
+              "name": "PPA Teórico — Essencial",
+              "description": "100 créditos pré-pagos para questões PPA",
+              "quantity": 1,
+              "unit_amount": 490
+            }
+          ],
+          "payment_methods": [
+            { "type": "CREDIT_CARD" },
+            { "type": "PIX" },
+            { "type": "BOLETO" }
+          ],
+          "redirect_url": "https://ppa.simulados.apia.app.br/planos?checkout=sandbox&ref=ppa-<ACCOUNT_ID>-<RANDOM_REFERENCE>",
+          "return_url": "https://ppa.simulados.apia.app.br/planos?checkout=sandbox&ref=ppa-<ACCOUNT_ID>-<RANDOM_REFERENCE>",
+          "notification_urls": [
+            "https://ppa.simulados.apia.app.br/api/webhooks/pagbank/sandbox"
+          ],
+          "payment_notification_urls": [
+            "https://ppa.simulados.apia.app.br/api/webhooks/pagbank/sandbox"
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "CHEC_<REDACTED>",
+          "links": [
+            {
+              "rel": "PAY",
+              "href": "https://sandbox.pagseguro.uol.com.br/checkout/<REDACTED>"
+            }
+          ]
+        }
+      },
+      "application_behavior": "O PPA valida que o link PAY é HTTPS e o abre em nova aba. O aplicativo não coleta dados de cartão, Pix ou boleto."
+    },
+    {
+      "name": "2. Consultar pedido para confirmação server-to-server",
+      "request": {
+        "method": "GET",
+        "url": "https://sandbox.api.pagseguro.com/orders/ORDE_<REDACTED>",
+        "headers": {
+          "Authorization": "Bearer <PAGBANK_SANDBOX_TOKEN>",
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": "ORDE_<REDACTED>",
+          "reference_id": "ppa-<ACCOUNT_ID>-<RANDOM_REFERENCE>",
+          "items": [
+            {
+              "reference_id": "essential",
+              "unit_amount": 490
+            }
+          ],
+          "charges": [
+            {
+              "id": "CHAR_<REDACTED>",
+              "status": "PAID",
+              "paid_at": "<ISO_8601_TIMESTAMP>",
+              "amount": { "value": 490 }
+            }
+          ]
+        }
+      },
+      "application_behavior": "Antes de creditar, o PPA confere ID da ordem, referência interna, pacote, valor e status PAID contra o pedido criado pela própria conta PPA."
+    },
+    {
+      "name": "3. Notificação de pagamento assinada",
+      "request": {
+        "method": "POST",
+        "url": "https://ppa.simulados.apia.app.br/api/webhooks/pagbank/sandbox",
+        "headers": {
+          "Content-Type": "application/json",
+          "x-product-origin": "ORDER",
+          "x-product-id": "ORDE_<REDACTED>",
+          "x-authenticity-token": "<SHA256_HEX_SIGNATURE>"
+        },
+        "body": {
+          "id": "ORDE_<REDACTED>",
+          "reference_id": "ppa-<ACCOUNT_ID>-<RANDOM_REFERENCE>",
+          "charges": [
+            {
+              "id": "CHAR_<REDACTED>",
+              "status": "PAID",
+              "amount": { "value": 490 }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "received": true,
+          "idempotent": false,
+          "signatureTrusted": true
+        }
+      },
+      "application_behavior": "O corpo bruto é validado com SHA-256 em tempo constante antes de o evento poder alterar pedido ou créditos."
+    },
+    {
+      "name": "4. Notificação Sandbox sem assinatura e reconciliação de defesa em profundidade",
+      "request": {
+        "method": "POST",
+        "url": "https://ppa.simulados.apia.app.br/api/webhooks/pagbank/sandbox",
+        "headers": {
+          "Content-Type": "application/json",
+          "x-product-origin": "ORDER",
+          "x-product-id": "ORDE_<REDACTED>"
+        },
+        "body": {
+          "id": "ORDE_<REDACTED>"
+        }
+      },
+      "response": {
+        "status": 202,
+        "body": {
+          "received": false,
+          "reconciled": true,
+          "idempotent": false,
+          "signatureTrusted": false
+        }
+      },
+      "application_behavior": "O payload sem assinatura não é fonte de verdade financeira. O identificador ORDE_ serve apenas para disparar a consulta autenticada do exemplo 2. O crédito é lançado uma única vez por pedido, com ledger transacional idempotente."
+    }
+  ],
+  "security_controls": [
+    "Catálogo, preço, quantidade de créditos e referência interna são definidos no servidor.",
+    "O retorno do navegador é apenas informativo e não concede créditos.",
+    "Pedidos e créditos pertencem à conta PPA que iniciou a compra; o pagador pode ser terceiro.",
+    "Eventos repetidos não criam créditos adicionais devido à chave idempotente e ao ledger imutável.",
+    "Produção usará credencial distinta e endpoint separado do Sandbox."
+  ]
+}

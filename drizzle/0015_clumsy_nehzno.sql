@@ -1,0 +1,1 @@
+ALTER TABLE `homologation_audit_events` MODIFY COLUMN `operation` enum('checkout_create','checkout_opened','checkout_return','order_reconcile','webhook_received','credit_settlement') NOT NULL;
