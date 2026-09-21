@@ -65,7 +65,7 @@ flowchart LR
 | **PagBank** (pagamentos) | Checkout hospedado, webhook com verificação HMAC + reconciliação server-to-server, Connect Token Challenge (par RSA 2048). Ambientes Sandbox/Produção totalmente segregados por variável de ambiente e coluna `environment`. | Integração mais coberta por testes do projeto; ver `docs/backlog.md` para pendências de homologação. |
 | **Google OAuth 2.0** | Login/vinculação de conta via `google-auth-library`, redirect URI fixo em produção. | Implementação própria, sem dependência de plataforma terceira. |
 | **SMTP** (Nodemailer) | Ativação de conta e recuperação de senha, porta 465/TLS implícito obrigatório. | Deliverability para Gmail é uma pendência ativa (ver backlog). |
-| **Armazenamento de objetos** (`server/storage.ts`) | AWS S3 direto via `@aws-sdk/client-s3`/`@aws-sdk/s3-request-presigner` (`AWS_REGION`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_BASE_URL` opcional). Upload por `PutObjectCommand`; download via rota `/storage/*` (URL pública de CDN ou presign de 5 min). | Substituiu o proxy Forge/Manus — ver `docs/backlog.md` para a migração pendente dos ativos binários já publicados. |
+| **Armazenamento de objetos** (`server/storage.ts`) | AWS S3 direto via `@aws-sdk/client-s3`/`@aws-sdk/s3-request-presigner` (`AWS_REGION`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_BASE_URL` opcional). Upload por `PutObjectCommand`; download via rota `/storage/*` (URL pública de CDN ou presign de 5 min). | — |
 | Analytics de terceiro (Umami) | Script injetado em `client/index.html` via placeholders `%VITE_ANALYTICS_ENDPOINT%`/`%VITE_ANALYTICS_WEBSITE_ID%`. | Mecanismo de substituição desses placeholders não está nas configs deste repositório — provavelmente feito pela camada de hospedagem. |
 
 ## 4. Estrutura de pastas
@@ -100,18 +100,12 @@ drizzle/
 shared/
   types.ts, const.ts, _core/errors.ts   # Tipos e constantes compartilhados client/server
 
-scripts/          # Automação operacional (seed, warm-cache, smoke tests, captura de UI,
-                  # migrate-brand-assets-to-s3) — ver how-to.md
-docs/exec-plan/   # Histórico de planejamento/execução de features passadas (não normativo)
+scripts/          # Automação operacional (seed, warm-cache, smoke tests, captura de UI) — ver how-to.md
 ```
 
-## 5. Nota histórica — plataforma "Manus"
+## 5. Fluxos ponta a ponta (sequência)
 
-O projeto foi originalmente gerado a partir de um template da plataforma Manus (`web-db-user`), que incluía um SDK server-side para login OAuth próprio, heartbeat/cron, notificações, geração de imagem, transcrição de voz e proxy de mapas, além de um proxy de LLM e de armazenamento de objetos apontando para o backend proprietário da Manus ("Forge"). Todo esse código foi removido: o SDK auxiliar (login OAuth, heartbeat, notificações, imagem, voz, mapas) nunca esteve conectado à aplicação e foi excluído sem substituição; o LLM e o armazenamento de objetos, que **estavam** ativos, foram migrados para provedores diretos (API oficial da OpenAI e AWS S3 — ver seção 3). A autenticação do produto sempre foi própria (e-mail/senha + Google OAuth), independente desse SDK.
-
-## 6. Fluxos ponta a ponta (sequência)
-
-### 6.1 Resposta a uma questão
+### 5.1 Resposta a uma questão
 
 ```mermaid
 sequenceDiagram
@@ -150,7 +144,7 @@ sequenceDiagram
     R-->>C: exibe feedback → transição → próxima questão
 ```
 
-### 6.2 Pagamento PagBank (checkout → webhook → reconciliação → crédito)
+### 5.2 Pagamento PagBank (checkout → webhook → reconciliação → crédito)
 
 ```mermaid
 sequenceDiagram
@@ -180,7 +174,7 @@ sequenceDiagram
     R-->>Aluno: saldo atualizado após confirmação autenticada
 ```
 
-### 6.3 Autenticação (local + Google)
+### 5.3 Autenticação (local + Google)
 
 ```mermaid
 sequenceDiagram
@@ -210,7 +204,7 @@ sequenceDiagram
     D-->>U: sessão emitida, redirect para /
 ```
 
-## 7. Variáveis de ambiente
+## 6. Variáveis de ambiente
 
 Carregadas via `dotenv` a partir da raiz do projeto. Ver `.env.example` para o arquivo de referência completo.
 
@@ -230,6 +224,6 @@ Carregadas via `dotenv` a partir da raiz do projeto. Ver `.env.example` para o a
 | `VITE_DEV_ALLOWED_HOSTS` | Dev | Hosts extras liberados no dev server do Vite (padrão: `localhost,127.0.0.1`) |
 | `PPA_BASE_URL`, `OCR_CONCURRENCY`, `RUN_SMTP_LIVE`, `RUN_SMTP_LIVE_DELIVERY_TEST`, `RUN_PAGBANK_PIX_KEY_VALIDATION`, `PAGBANK_ENABLE_PRODUCTION_AUTH_PROBE` | Scripts/Testes | Automação e testes que tocam serviços reais |
 
-## 8. Deploy e CI/CD
+## 7. Deploy e CI/CD
 
 O repositório inclui `Dockerfile` (build multi-stage: instala dependências, builda client+server, imagem final só com dependências de produção) e `.github/workflows/ci.yml` (type-check, migração contra um MySQL de serviço, testes, build) para GitHub Actions. Isso cobre integração contínua e um caminho de containerização; a orquestração de deploy real (onde a imagem roda, como segredos são providos em produção) continua sendo uma decisão operacional do time, não fixada neste repositório.

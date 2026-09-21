@@ -59,9 +59,6 @@ Nenhum destes é chamado automaticamente por `pnpm run *` — são ferramentas m
 - **`warm-cache.mjs`** — pré-aquece o cache compartilhado de questões, gerando via LLM+RAG até 4 itens aprovados por conceito canônico, em ondas controladas, respeitando a barreira anti-vazamento.
 - **`audit-assessment-matrix.mjs`** — calcula estatísticas de cobertura da matriz de 100 questões (capítulos/conceitos por matéria) offline, sem chamar a aplicação em execução — útil para validar a viabilidade de uma nova regra de matriz antes de implementá-la.
 
-### Migração de infraestrutura (execução única)
-- **`migrate-brand-assets-to-s3.mjs`** — copia os ativos binários de marca (logotipos, favicons, selo PagBank) do bucket antigo da plataforma Manus/Forge para o novo bucket AWS S3, preservando as chaves referenciadas pelo app. Requer `FORGE_API_URL`/`FORGE_API_KEY` (credenciais antigas, só para esta migração) e `AWS_REGION`/`AWS_S3_BUCKET` (destino). Rode uma única vez antes do primeiro deploy pós-migração — ver `docs/backlog.md` seção 0.
-
 ### Smoke tests (requerem servidor rodando, via `PPA_BASE_URL`, default `http://localhost:3000`)
 - **`smoke-milestones.mjs`**, **`smoke-milestones-api-only.mjs`**, **`smoke-milestones-api-cache.mjs`** — simulam um aluno completo respondendo até os marcos de 20/100 questões, validando persistência de avaliações e plano de estudo.
 - **`smoke-auth-recovery.mjs`** — valida ponta a ponta cadastro/ativação/recuperação de senha.
@@ -73,7 +70,7 @@ Nenhum destes é chamado automaticamente por `pnpm run *` — são ferramentas m
 - **`capture-authenticated-ui.mjs`**, **`capture-plans-page.mjs`**, **`capture-public-auth-link-mobile.mjs`** — capturam screenshots de telas-chave.
 - **`verify-public-plans-mobile.mjs`**, **`verify-ui-breakpoints.mjs`** — validam responsividade em breakpoints definidos.
 
-Nenhum desses scripts de captura/smoke faz parte de um pipeline de CI — são executados manualmente durante desenvolvimento/QA, alinhados à política de revisão manual antes de publicação (ver `docs/exec-plan/release-process.md`).
+Nenhum desses scripts de captura/smoke faz parte de um pipeline de CI — são executados manualmente durante desenvolvimento/QA, alinhados à política de revisão manual antes de publicação (seção 7).
 
 ## 7. Processo de release (política do projeto)
 
@@ -102,11 +99,8 @@ O LLM agora aponta para a API oficial da OpenAI por padrão — configure `OPENA
 ### Upload/leitura de arquivos falhando com "Storage config missing"
 Configure `AWS_REGION` e `AWS_S3_BUCKET` no `.env`. As credenciais de acesso (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) são resolvidas pela cadeia padrão do SDK da AWS.
 
-### Logotipo, favicon ou selo PagBank quebrados após migrar para o novo storage
-Esses arquivos ainda só existem no bucket antigo da Manus/Forge. Rode `scripts/migrate-brand-assets-to-s3.mjs` uma única vez (ver seção 6) antes de publicar.
-
 ### E-mail transacional não chega ao Gmail
-Pendência ativa e não resolvida no histórico do projeto — não é um problema de código isolado, depende de rastreio Exim do provedor de hospedagem. Ver `docs/backlog.md` para o estado detalhado e os próximos passos já mapeados (Track Delivery no cPanel, comparação com rota de controle via Roundcube/Cube).
+Pendência ativa, não é um problema de código isolado — depende de rastreio Exim do provedor de hospedagem. Ver `docs/backlog.md` para o estado detalhado e os próximos passos já mapeados (Track Delivery no cPanel, comparação com rota de controle via Roundcube/Cube).
 
 ### Login Google não funciona em ambiente local
 O redirect URI é uma constante fixa (`https://ppa.simulados.apia.app.br/api/auth/google/callback`, `server/googleAuth.ts`) — para testar localmente é necessário um client OAuth próprio configurado com o redirect de desenvolvimento, ou ajustar temporariamente a constante (nunca commitar essa alteração).

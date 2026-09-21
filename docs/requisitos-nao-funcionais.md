@@ -29,7 +29,7 @@ Valores de cabeçalho de e-mail (SMTP) são validados contra CRLF injection; có
 Evidências de homologação PagBank removem totalmente credenciais/segredos/dados de cartão e mascaram parcialmente identidades — nunca persistem token de autorização, CVV, senha ou payload de pagamento completo.
 
 ### RNF-09 — TLS
-SMTP exige porta 465 com TLS implícito (`SMTP_SECURE=true`), TLS mínimo 1.2, `rejectUnauthorized: true`. Certificado TLS do domínio de produção verificado (emissor Google Trust Services). Decisão documentada de **não exibir selo WebTrust/CA Browser Forum** por não ser uso autorizado para terceiros (ver `docs/exec-plan/tls-webtrust-research.md`).
+SMTP exige porta 465 com TLS implícito (`SMTP_SECURE=true`), TLS mínimo 1.2, `rejectUnauthorized: true`. Certificado TLS do domínio de produção verificado (emissor Google Trust Services). Decisão documentada de **não exibir selo WebTrust/CA Browser Forum** por não ser uso autorizado para terceiros (ver `docs/pre-release/exec-plan/tls-webtrust-research.md`).
 
 ### RNF-10 — Isolamento de segredos por ambiente
 Tokens de Sandbox e Produção PagBank são segregados em variáveis de ambiente distintas; nenhuma credencial de Sandbox é reaproveitada em produção (política formalizada explicitamente no histórico do projeto).
@@ -109,7 +109,7 @@ Não há heartbeat/cron, notificação externa ou roteador de sistema de terceir
 Suíte Vitest ampla cobrindo: regras de domínio (aprendizagem, matriz de avaliação, billing, cache, e-mail, senha, RAG, LLM), controle de acesso e isolamento entre contas, contratos de API (não vazamento de dados sensíveis), fluxos de integração completos (cadastro→ativação→login, diagnóstico de 100 questões, ciclo PagBank Sandbox/Produção, OAuth Google). Testes que dependem de rede real (SMTP ao vivo, sondas PagBank de produção) são isolados atrás de flags de ambiente (`RUN_SMTP_LIVE`, etc.) para não comprometer a confiabilidade da suíte padrão.
 
 ### RNF-29 — Processo de release com revisão manual obrigatória
-Publicação automática está desativada como política permanente do projeto: toda entrega passa por checkpoint salvo, verificação de tipos/testes/build e confirmação explícita do responsável antes de qualquer publicação (ver `docs/exec-plan/release-process.md`).
+Publicação automática está desativada como política permanente do projeto: toda entrega passa por checkpoint salvo, verificação de tipos/testes/build e confirmação explícita do responsável antes de qualquer publicação (ver `docs/pre-release/exec-plan/release-process.md`).
 
 ### RNF-30 — Tipagem de ponta a ponta
 TypeScript estrito no cliente e servidor, com contrato de API tipado por tRPC (`AppRouter`) compartilhado — mudanças de schema de entrada/saída são verificadas em tempo de compilação, não apenas em runtime.
@@ -122,7 +122,7 @@ TypeScript estrito no cliente e servidor, com contrato de API tipado por tRPC (`
 Uso de `role="radiogroup"`/`role="radio"` nas alternativas de questão, `role="tree"`/`role="treeitem"`/`aria-level` no mapa de conceitos e no dashboard de prontidão, `aria-live="polite"` na transição entre questões, `focus-visible` em controles interativos.
 
 ### RNF-32 — Responsividade
-Layouts validados em desktop (≥1024px), tablet e mobile (a partir de ~360–430px), com padrões de layout dedicados (sidebar fixa vs. header + drawer) e evidência visual revisável registrada no histórico do projeto (`docs/exec-plan/visual-review.md`).
+Layouts validados em desktop (≥1024px), tablet e mobile (a partir de ~360–430px), com padrões de layout dedicados (sidebar fixa vs. header + drawer) e evidência visual revisável registrada no histórico do projeto (`docs/pre-release/exec-plan/visual-review.md`).
 
 ---
 

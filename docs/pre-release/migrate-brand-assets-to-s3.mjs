@@ -12,7 +12,7 @@
  * Uso:
  *   FORGE_API_URL=... FORGE_API_KEY=... \
  *   AWS_REGION=... AWS_S3_BUCKET=... \
- *   node scripts/migrate-brand-assets-to-s3.mjs
+ *   node docs/pre-release/migrate-brand-assets-to-s3.mjs
  *
  * Credenciais AWS são resolvidas pela cadeia padrão do SDK (variáveis de
  * ambiente, perfil compartilhado, role da instância, etc.) — não é necessário
